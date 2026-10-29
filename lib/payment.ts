@@ -18,6 +18,11 @@ export type Wallet = { id: string; number: string; name: string; qr: boolean };
 const DIR = path.join(process.cwd(), "data", "payment");
 const FILE = path.join(DIR, "settings.json");
 
+/** QR images shipped with the site (public/payment). Used when no QR was uploaded from the admin, which hosting without a disk cannot keep. */
+export const STATIC_QR: Record<string, string> = { GCash: "/payment/qr-gcash.jpg" };
+/** Shipped defaults for the number and name (public details, shown to customers), used when nothing else is set. */
+const STATIC_WALLET: Record<string, { number: string; name: string }> = { GCash: { number: "09693333473", name: "Adrian S. Guese" } };
+
 type Saved = Record<string, { number?: string; name?: string; qrType?: string; qrAt?: number }>;
 const readSaved = (): Saved => {
   try {
@@ -34,14 +39,14 @@ export const walletAccounts = (): Wallet[] => {
     { id: "GCash", env: { number: process.env.GCASH_NUMBER, name: process.env.GCASH_NAME } },
     { id: "Maya", env: { number: process.env.MAYA_NUMBER, name: process.env.MAYA_NAME } },
   ]
-    .map((w) => ({ id: w.id, number: saved[w.id]?.number ?? w.env.number ?? "", name: saved[w.id]?.name ?? w.env.name ?? "", qr: !!saved[w.id]?.qrType }))
+    .map((w) => ({ id: w.id, number: saved[w.id]?.number ?? w.env.number ?? STATIC_WALLET[w.id]?.number ?? "", name: saved[w.id]?.name ?? w.env.name ?? STATIC_WALLET[w.id]?.name ?? "", qr: !!saved[w.id]?.qrType || w.id in STATIC_QR }))
     .filter((w) => w.number || w.qr);
 };
 
 /** All settings for the admin form, including wallets that are not set up yet. */
 export const walletSettings = () => {
   const saved = readSaved();
-  return ["GCash", "Maya"].map((id) => ({ id, number: saved[id]?.number ?? (id === "GCash" ? process.env.GCASH_NUMBER : process.env.MAYA_NUMBER) ?? "", name: saved[id]?.name ?? (id === "GCash" ? process.env.GCASH_NAME : process.env.MAYA_NAME) ?? "", qr: !!saved[id]?.qrType, qrAt: saved[id]?.qrAt ?? 0 }));
+  return ["GCash", "Maya"].map((id) => ({ id, number: saved[id]?.number ?? (id === "GCash" ? process.env.GCASH_NUMBER : process.env.MAYA_NUMBER) ?? STATIC_WALLET[id]?.number ?? "", name: saved[id]?.name ?? (id === "GCash" ? process.env.GCASH_NAME : process.env.MAYA_NAME) ?? STATIC_WALLET[id]?.name ?? "", qr: !!saved[id]?.qrType || id in STATIC_QR, qrAt: saved[id]?.qrAt ?? 0 }));
 };
 
 export function saveWallet(id: string, patch: { number?: string; name?: string }, qr?: { type: string; bytes: Buffer }) {
