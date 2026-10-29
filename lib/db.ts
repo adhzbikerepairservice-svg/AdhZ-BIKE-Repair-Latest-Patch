@@ -22,12 +22,14 @@ function sql() {
 }
 
 async function table() {
-  ready ??= sql()`create table if not exists adhz_kv (key text primary key, value jsonb not null)`.catch((e) => {
-    ready = undefined;
-    throw e;
-  });
+  const db = sql();
+  if (!ready) {
+    ready = Promise.resolve(db`create table if not exists adhz_kv (key text primary key, value jsonb not null)`).catch((e) => {
+      ready = undefined;
+      throw e;
+    });
+  }
   await ready;
-  return sql();
 }
 
 const DIR = path.join(process.cwd(), "data", "kv");
@@ -35,7 +37,9 @@ const file = (key: string) => path.join(DIR, key.replace(/[^\w-]/g, "_") + ".jso
 
 export async function kvGet<T>(key: string): Promise<T | null> {
   if (url) {
-    const rows = await (await table())`select value from adhz_kv where key = ${key}`;
+    await table();
+    const db = sql();
+    const rows = await db`select value from adhz_kv where key = ${key}`;
     return (rows[0]?.value as T) ?? null;
   }
   try {
@@ -47,7 +51,8 @@ export async function kvGet<T>(key: string): Promise<T | null> {
 
 export async function kvSet(key: string, value: unknown): Promise<void> {
   if (url) {
-    const db = await table();
+    await table();
+    const db = sql();
     await db`insert into adhz_kv (key, value) values (${key}, ${db.json(value as never)}) on conflict (key) do update set value = excluded.value`;
     return;
   }
@@ -57,7 +62,9 @@ export async function kvSet(key: string, value: unknown): Promise<void> {
 
 export async function kvDel(key: string): Promise<void> {
   if (url) {
-    await (await table())`delete from adhz_kv where key = ${key}`;
+    await table();
+    const db = sql();
+    await db`delete from adhz_kv where key = ${key}`;
     return;
   }
   try {
