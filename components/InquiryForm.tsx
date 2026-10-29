@@ -5,6 +5,7 @@ import { dayLong, getMech, getService, hourLabel, NewInquiry } from "@/lib/shop"
 import type { Pick } from "./Schedule";
 
 interface Props {
+  initialItem?: string;
   sel: Pick | null;
   service: string;
   onSent: () => void;
@@ -14,13 +15,13 @@ interface Props {
 
 const BIKES = ["Road", "Mountain", "Hybrid / city", "Folding", "E-bike", "BMX / kids", "Other"];
 
-export default function InquiryForm({ sel, service, onSent, onTaken, onAnother }: Props) {
+export default function InquiryForm({ initialItem = "", sel, service, onSent, onTaken, onAnother }: Props) {
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
   const [email, setEmail] = useState("");
   const [bike, setBike] = useState(BIKES[0]);
   const [brand, setBrand] = useState("");
-  const [notes, setNotes] = useState("");
+  const [notes, setNotes] = useState(initialItem ? `I would like: ${initialItem}.` : "");
   const [handover, setHandover] = useState<"bring" | "collect">("bring");
   const [address, setAddress] = useState("");
   const [pickup, setPickup] = useState("");

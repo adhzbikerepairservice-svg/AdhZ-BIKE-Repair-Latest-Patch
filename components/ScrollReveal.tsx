@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 
 // Blocks that fade up (staggered) the first time they scroll into view.
-const TARGETS = ".sec-head, .tile, .qcard, .road li:not(.road-bike), .svccard, .mapcard, .reach, .hoursbox, .ctaband, .showband, .finder, .slides, .book .panel";
+const TARGETS = ".sec-head, .tile, .qcard, .road li:not(.road-bike), .svccard, .mapcard, .reach, .hoursbox, .ctaband, .showband, .diag, .slides, .book .panel";
 
 /**
  * Tags matching elements with `.reveal` and adds `.in` when they enter the viewport. Elements are

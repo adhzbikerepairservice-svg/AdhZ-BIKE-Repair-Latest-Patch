@@ -7,3 +7,6 @@ data
 .env*
 *.pdf
 tsconfig.tsbuildinfo
+
+.vercel
+.env*

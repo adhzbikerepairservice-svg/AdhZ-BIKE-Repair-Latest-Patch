@@ -4,65 +4,71 @@ import Link from "next/link";
 import { useState } from "react";
 import { getService } from "@/lib/shop";
 
-const SYMPTOMS = [
-  { label: "Brakes feel weak or spongy", service: "repair", item: "Brake bleeding" },
-  { label: "Tubeless tyre keeps losing air", service: "repair", item: "Tubeless set-up" },
-  { label: "Chain is noisy and gears skip", service: "service", item: "Bike wash with tune up" },
-  { label: "It's been a long time since a proper check", service: "service", item: "Bike spa" },
-  { label: "I have a frame and parts to assemble", service: "build", item: "Full bike build" },
-  { label: "I want a dropper post or hidden cables", service: "build", item: "Dropper or internal routing" },
+// Hotspots sit on the drawing as percentages of its 600 x 330 box.
+const PARTS = [
+  { id: "brakes", name: "Brakes", says: "They feel weak or spongy", service: "repair", item: "Brake bleeding", x: 78, y: 54 },
+  { id: "tyres", name: "Tyres", says: "Tubeless keeps losing air", service: "repair", item: "Tubeless set-up", x: 93, y: 78 },
+  { id: "drive", name: "Chain and gears", says: "Noisy chain, gears skip", service: "service", item: "Bike wash with tune up", x: 30, y: 74 },
+  { id: "check", name: "Full check-up", says: "A long time since a proper check", service: "service", item: "Bike spa", x: 48, y: 48 },
+  { id: "build", name: "New build", says: "I have a frame and parts", service: "build", item: "Full bike build", x: 62, y: 30 },
+  { id: "upgrade", name: "Upgrades", says: "Dropper post or hidden cables", service: "build", item: "Dropper or internal routing", x: 43, y: 22 },
 ];
 
-/** "Not sure what you need?" helper: pick what the bike is doing, get the matching service and a Book link. */
+/** "What does your bike need?": tap a glowing spot on the bike; a card names the part, the service and a Book button. */
 export default function Finder() {
-  const [pick, setPick] = useState<number | null>(null);
-  const OTHERS = SYMPTOMS.length;
-  const hit = pick === null || pick === OTHERS ? null : SYMPTOMS[pick];
-  const svc = hit ? getService(hit.service) : null;
+  const [id, setId] = useState<string | null>(null);
+  const part = PARTS.find((p) => p.id === id) ?? null;
+  const svc = part ? getService(part.service) : null;
 
   return (
-    <div className="finder">
-      <div className="finder-ask">
-        <h2>Not sure what your bike needs?</h2>
-        <p>Tell us what it&apos;s doing and we&apos;ll point you to the right service.</p>
-        <div className="finder-chips" role="radiogroup" aria-label="What is your bike doing?">
-          {SYMPTOMS.map((s, i) => (
-            <button key={s.label} type="button" role="radio" aria-checked={pick === i} onClick={() => setPick(i)}>
-              {s.label}
-            </button>
-          ))}
-          <button type="button" role="radio" aria-checked={pick === OTHERS} onClick={() => setPick(OTHERS)}>
-            Others
-          </button>
-        </div>
+    <div className="diag">
+      <div className="diag-copy">
+        <h2>What does your bike need?</h2>
+        <p>Tap a glowing spot on the bike.</p>
       </div>
-      <div className="finder-result" aria-live="polite">
-        {hit && svc ? (
-          <div key={pick} className="finder-card">
-            <span className="eyebrow">We suggest</span>
-            <h3>{svc.name}</h3>
-            <p>
-              Start with <b>{hit.item}</b>. Adrian will confirm once he sees the bike.
-            </p>
-            <Link className="btn" href={`/book?service=${hit.service}`}>
-              Book {svc.name.toLowerCase()}
-            </Link>
-          </div>
-        ) : pick === OTHERS ? (
-          <div key="others" className="finder-card">
-            <span className="eyebrow">Something else?</span>
-            <h3>Chat with Adrian</h3>
-            <p>Describe the problem and he will reply with what your bike needs.</p>
-            <button type="button" className="btn" onClick={() => window.dispatchEvent(new Event("open-chat"))}>
-              Start chat
-            </button>
+
+      <div className="diag-stage">
+        <svg className="diag-bike" viewBox="0 0 600 330" role="img" aria-label="Drawing of a bike with tappable parts">
+          <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="115" cy="235" r="88" stroke="#1e2b52" strokeWidth="11" />
+            <circle cx="115" cy="235" r="76" stroke="#8fb4ee" strokeWidth="2" strokeDasharray="3 7" />
+            <circle cx="480" cy="235" r="88" stroke="#1e2b52" strokeWidth="11" />
+            <circle cx="480" cy="235" r="76" stroke="#8fb4ee" strokeWidth="2" strokeDasharray="3 7" />
+            <path d="M115 235 L262 238 L240 112 Z M240 112 L412 118 L262 238 M412 118 L480 235" stroke="#f2b922" strokeWidth="10" />
+            <path d="M412 118 L400 92 L440 92 M215 106 L262 106" stroke="#1e2b52" strokeWidth="9" />
+            <circle cx="262" cy="238" r="16" stroke="#1e2b52" strokeWidth="6" fill="#fff" />
+            <path d="M262 238 L120 235" stroke="#1e2b52" strokeWidth="3" strokeDasharray="2 6" opacity="0.5" />
+          </g>
+          <circle cx="115" cy="235" r="9" fill="#1e2b52" />
+          <circle cx="480" cy="235" r="9" fill="#1e2b52" />
+        </svg>
+        {PARTS.map((p) => (
+          <button key={p.id} type="button" className="hot" aria-pressed={id === p.id} aria-label={`${p.name}: ${p.says}`} style={{ left: `${p.x}%`, top: `${p.y}%` }} onClick={() => setId(p.id)}>
+            <span className="hot-ring" aria-hidden />
+            <span className="hot-tip">{p.name}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="diag-card" aria-live="polite">
+        {part && svc ? (
+          <div key={part.id} className="diag-in">
+            <span className="fbadge">{part.name}</span>
+            <p className="diag-says">&ldquo;{part.says}&rdquo;</p>
+            <span className="diag-arrow">We suggest</span>
+            <b className="fname">{svc.name}</b>
+            <span className="fitem">Start with {part.item}</span>
+            <Link className="btn gold" href={`/book?service=${part.service}`}>Book {svc.name.toLowerCase()}</Link>
           </div>
         ) : (
-          <div className="finder-card idle">
-            <span className="eyebrow">Your match</span>
-            <p>Pick one on the left and your suggested service shows up here.</p>
+          <div className="diag-idle">
+            <b>Pick a part</b>
+            <span>The right service appears here.</span>
           </div>
         )}
+        <button type="button" className="linkbtn diag-else" onClick={() => window.dispatchEvent(new Event("open-chat"))}>
+          Not on the bike? Chat with Adrian
+        </button>
       </div>
     </div>
   );

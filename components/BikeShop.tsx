@@ -8,7 +8,7 @@ import { ICONS } from "./Services";
 
 const POLL_MS = 5000;
 
-export default function BikeShop({ initialService = "" }: { initialService?: string }) {
+export default function BikeShop({ initialService = "", initialItem = "" }: { initialService?: string; initialItem?: string }) {
   // Dates depend on the current time, so they are computed after mount to avoid hydration mismatch.
   const [dates, setDates] = useState<Date[]>([]);
   const [date, setDate] = useState("");
@@ -115,6 +115,7 @@ export default function BikeShop({ initialService = "" }: { initialService?: str
             </div>
           </div>
           <InquiryForm
+            initialItem={initialItem}
             sel={sel}
             service={service}
             onAnother={() => setService("")}
