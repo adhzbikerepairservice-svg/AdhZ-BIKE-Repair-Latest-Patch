@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { emailConfigured, sendEmail } from "./mail";
 
 /**
@@ -16,11 +17,22 @@ export async function sendAlertEmail(title: string, message: string, link?: stri
   return sendEmail(to, `[ADHZ] ${title}`, `<div style="font-family:Arial,sans-serif;max-width:480px"><h3 style="margin:0 0 8px;color:#1f52c4">${esc(title)}</h3><p>${esc(message)}</p>${link ? `<p><a href="${link}" style="background:#1f52c4;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">Open the admin</a></p>` : ""}</div>`);
 }
 
-export function notifyOwner(title: string, message: string, click?: string) {
-  sendAlertEmail(title, message, click).catch(() => {});
+async function send(title: string, message: string, click?: string) {
+  const email = sendAlertEmail(title, message, click).catch(() => {});
   const topic = process.env.NTFY_TOPIC;
-  if (!topic) return;
   const headers: Record<string, string> = { Title: title, Priority: "high", Tags: "bike" };
   if (click) headers.Click = click;
-  fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, { method: "POST", headers, body: message.slice(0, 400), signal: AbortSignal.timeout(5000) }).catch(() => {});
+  const push = topic
+    ? fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, { method: "POST", headers, body: message.slice(0, 400), signal: AbortSignal.timeout(5000) }).catch(() => {})
+    : undefined;
+  await Promise.all([email, push]);
+}
+
+export function notifyOwner(title: string, message: string, click?: string) {
+  // after() keeps the alert going once the reply is sent, which serverless hosting would otherwise cut off
+  try {
+    after(() => send(title, message, click));
+  } catch {
+    send(title, message, click).catch(() => {});
+  }
 }

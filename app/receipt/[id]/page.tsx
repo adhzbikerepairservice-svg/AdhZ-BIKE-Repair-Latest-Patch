@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import PayPanel from "@/components/PayPanel";
 import PrintButton from "@/components/PrintButton";
 import { payStatusOf, walletAccounts } from "@/lib/payment";
-import { store } from "@/lib/store";
+import { loadStore, store } from "@/lib/store";
 import { ADDRESS } from "@/lib/maps";
 import { dayLong, getMech, getService, hourLabel } from "@/lib/shop";
 
@@ -14,6 +14,7 @@ const peso = (n: number) => "₱" + n.toLocaleString("en-PH", { minimumFractionD
 
 export default async function ReceiptPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  await loadStore();
   const i = store.inquiries.find((x) => x.id === id);
   if (!i || !i.receipt) notFound();
   const r = i.receipt;
@@ -106,7 +107,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
         </div>
 
         {r.payment === "ewallet" && status !== "paid" && (
-          <PayPanel id={i.id} total={balance} status={status} wallets={walletAccounts()} shopPhone="0969 333 3473" initialRef={r.payRef} />
+          <PayPanel id={i.id} total={balance} status={status} wallets={await walletAccounts()} shopPhone="0969 333 3473" initialRef={r.payRef} />
         )}
         {r.note && <p className="rnote">{r.note}</p>}
 

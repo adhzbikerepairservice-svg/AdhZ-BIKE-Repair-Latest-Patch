@@ -2,13 +2,14 @@ import { PDFDocument, StandardFonts, degrees, rgb } from "pdf-lib";
 import { ADDRESS } from "@/lib/maps";
 import { payStatusOf } from "@/lib/payment";
 import { dayLong, getMech, getService, hourLabel } from "@/lib/shop";
-import { store } from "@/lib/store";
+import { loadStore, store } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
 // Real PDF download of a receipt (the link contains the receipt's unguessable id).
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
+  await loadStore();
   const i = store.inquiries.find((x) => x.id === id);
   if (!i?.receipt) return new Response("Not found", { status: 404 });
   const r = i.receipt;

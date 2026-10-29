@@ -9,7 +9,7 @@ const OK_TYPES = ["image/png", "image/jpeg", "image/webp"];
 // Owner: read the e-wallet settings.
 export async function GET(req: Request) {
   if (!isOwner(req)) return NextResponse.json({ error: "forbidden" }, { status: 403 });
-  return NextResponse.json({ wallets: walletSettings() });
+  return NextResponse.json({ wallets: await walletSettings() });
 }
 
 // Owner: save a wallet's number, name and QR image (multipart form: wallet, number, name, qr, removeQr).
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     if (file.size > 3 * 1024 * 1024) return NextResponse.json({ error: "size" }, { status: 400 });
     qr = { type: file.type, bytes: Buffer.from(await file.arrayBuffer()) };
   }
-  saveWallet(wallet, { number, name }, qr);
-  if (form.get("removeQr") === "1" && !qr) removeQr(wallet);
+  await saveWallet(wallet, { number, name }, qr);
+  if (form.get("removeQr") === "1" && !qr) await removeQr(wallet);
   return NextResponse.json({ ok: true });
 }

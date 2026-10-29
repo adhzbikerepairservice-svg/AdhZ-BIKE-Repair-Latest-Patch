@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export async function GET(_req: Request, ctx: { params: Promise<{ wallet: string }> }) {
   const { wallet } = await ctx.params;
   const id = wallet.toLowerCase() === "maya" ? "Maya" : "GCash";
-  const qr = readQr(id);
+  const qr = await readQr(id);
   if (!qr) {
     const shipped = STATIC_QR[id];
     return shipped ? Response.redirect(new URL(shipped, _req.url), 307) : new Response("No QR code", { status: 404 });

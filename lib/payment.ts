@@ -1,5 +1,4 @@
-import fs from "node:fs";
-import path from "node:path";
+import { kvDel, kvGet, kvSet } from "./db";
 import type { Inquiry } from "./shop";
 
 /**
@@ -15,77 +14,60 @@ export type PayStatus = "unpaid" | "submitted" | "paid";
 
 export type Wallet = { id: string; number: string; name: string; qr: boolean };
 
-const DIR = path.join(process.cwd(), "data", "payment");
-const FILE = path.join(DIR, "settings.json");
-
-/** QR images shipped with the site (public/payment). Used when no QR was uploaded from the admin, which hosting without a disk cannot keep. */
+/** QR images shipped with the site (public/payment). Used when no QR was uploaded from the admin. */
 export const STATIC_QR: Record<string, string> = { GCash: "/payment/qr-gcash.jpg" };
 /** Shipped defaults for the number and name (public details, shown to customers), used when nothing else is set. */
 const STATIC_WALLET: Record<string, { number: string; name: string }> = { GCash: { number: "09693333473", name: "Adrian S. Guese" } };
 
 type Saved = Record<string, { number?: string; name?: string; qrType?: string; qrAt?: number }>;
-const readSaved = (): Saved => {
-  try {
-    return JSON.parse(fs.readFileSync(FILE, "utf8"));
-  } catch {
-    return {};
-  }
+const readSaved = async (): Promise<Saved> => (await kvGet<Saved>("pay_settings")) ?? {};
+const qrKey = (id: string) => `pay_qr_${id.toLowerCase()}`;
+
+const envOf = (id: string) => (id === "GCash" ? { number: process.env.GCASH_NUMBER, name: process.env.GCASH_NAME } : { number: process.env.MAYA_NUMBER, name: process.env.MAYA_NAME });
+
+/** All settings for the admin form, including wallets that are not set up yet. Saved values win over .env.local, then shipped defaults. */
+export const walletSettings = async () => {
+  const saved = await readSaved();
+  return ["GCash", "Maya"].map((id) => ({
+    id,
+    number: saved[id]?.number ?? envOf(id).number ?? STATIC_WALLET[id]?.number ?? "",
+    name: saved[id]?.name ?? envOf(id).name ?? STATIC_WALLET[id]?.name ?? "",
+    qr: !!saved[id]?.qrType || id in STATIC_QR,
+    qrAt: saved[id]?.qrAt ?? 0,
+  }));
 };
 
-/** The wallets customers can pay to. Settings saved from the admin win over .env.local values. */
-export const walletAccounts = (): Wallet[] => {
-  const saved = readSaved();
-  return [
-    { id: "GCash", env: { number: process.env.GCASH_NUMBER, name: process.env.GCASH_NAME } },
-    { id: "Maya", env: { number: process.env.MAYA_NUMBER, name: process.env.MAYA_NAME } },
-  ]
-    .map((w) => ({ id: w.id, number: saved[w.id]?.number ?? w.env.number ?? STATIC_WALLET[w.id]?.number ?? "", name: saved[w.id]?.name ?? w.env.name ?? STATIC_WALLET[w.id]?.name ?? "", qr: !!saved[w.id]?.qrType || w.id in STATIC_QR }))
-    .filter((w) => w.number || w.qr);
-};
+/** The wallets customers can pay to. */
+export const walletAccounts = async (): Promise<Wallet[]> =>
+  (await walletSettings()).map(({ id, number, name, qr }) => ({ id, number, name, qr })).filter((w) => w.number || w.qr);
 
-/** All settings for the admin form, including wallets that are not set up yet. */
-export const walletSettings = () => {
-  const saved = readSaved();
-  return ["GCash", "Maya"].map((id) => ({ id, number: saved[id]?.number ?? (id === "GCash" ? process.env.GCASH_NUMBER : process.env.MAYA_NUMBER) ?? STATIC_WALLET[id]?.number ?? "", name: saved[id]?.name ?? (id === "GCash" ? process.env.GCASH_NAME : process.env.MAYA_NAME) ?? STATIC_WALLET[id]?.name ?? "", qr: !!saved[id]?.qrType || id in STATIC_QR, qrAt: saved[id]?.qrAt ?? 0 }));
-};
-
-export function saveWallet(id: string, patch: { number?: string; name?: string }, qr?: { type: string; bytes: Buffer }) {
-  fs.mkdirSync(DIR, { recursive: true });
-  const saved = readSaved();
+export async function saveWallet(id: string, patch: { number?: string; name?: string }, qr?: { type: string; bytes: Buffer }) {
+  const saved = await readSaved();
   const cur = saved[id] ?? {};
   if (patch.number !== undefined) cur.number = patch.number;
   if (patch.name !== undefined) cur.name = patch.name;
   if (qr) {
-    fs.writeFileSync(path.join(DIR, `qr-${id.toLowerCase()}.bin`), qr.bytes);
+    await kvSet(qrKey(id), { type: qr.type, data: qr.bytes.toString("base64") });
     cur.qrType = qr.type;
     cur.qrAt = Date.now();
   }
   saved[id] = cur;
-  fs.writeFileSync(FILE, JSON.stringify(saved, null, 2));
+  await kvSet("pay_settings", saved);
 }
 
-export function removeQr(id: string) {
-  const saved = readSaved();
+export async function removeQr(id: string) {
+  const saved = await readSaved();
   if (saved[id]) {
     delete saved[id].qrType;
     delete saved[id].qrAt;
-    fs.writeFileSync(FILE, JSON.stringify(saved, null, 2));
+    await kvSet("pay_settings", saved);
   }
-  try {
-    fs.unlinkSync(path.join(DIR, `qr-${id.toLowerCase()}.bin`));
-  } catch {
-    /* none saved */
-  }
+  await kvDel(qrKey(id));
 }
 
-export function readQr(id: string): { type: string; bytes: Buffer } | null {
-  const type = readSaved()[id]?.qrType;
-  if (!type) return null;
-  try {
-    return { type, bytes: fs.readFileSync(path.join(DIR, `qr-${id.toLowerCase()}.bin`)) };
-  } catch {
-    return null;
-  }
+export async function readQr(id: string): Promise<{ type: string; bytes: Buffer } | null> {
+  const row = await kvGet<{ type: string; data: string }>(qrKey(id));
+  return row ? { type: row.type, bytes: Buffer.from(row.data, "base64") } : null;
 }
 
 /** Receipts made before this flow existed have no status and count as paid. */

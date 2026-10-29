@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { isOwner } from "@/lib/auth";
-import { store } from "@/lib/store";
+import { store, withStore } from "@/lib/store";
 import { getMech, HOURS, isClosed, parseDate, slotId, SHOP, ymd } from "@/lib/shop";
 
 export const dynamic = "force-dynamic";
 
 // Public: current availability from today onward.
-export async function GET() {
+async function getSlots() {
   const today = ymd(new Date());
   const slots = [...store.slots.entries()].filter(([, s]) => s.date >= today);
   return NextResponse.json({ slots });
@@ -18,7 +18,7 @@ const DATE = /^\d{4}-\d{2}-\d{2}$/;
 //  - { action: "block" | "release", from, to, hours? } blocks or reopens every selected hour on every working day in the range.
 //    Booked slots (pending/confirmed) are never touched; the reply says how many were skipped.
 //  - { date, mech, hour } (older) toggles one slot, used by the shop view on the booking page.
-export async function POST(req: Request) {
+async function postSlot(req: Request) {
   if (!isOwner(req)) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const body = await req.json();
 
@@ -63,3 +63,6 @@ export async function POST(req: Request) {
   else if (cur.status === "blocked") store.slots.delete(id);
   return NextResponse.json({ ok: true });
 }
+
+export const GET = withStore(getSlots);
+export const POST = withStore(postSlot, { save: true });

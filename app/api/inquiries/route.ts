@@ -3,7 +3,7 @@ import { isOwner } from "@/lib/auth";
 import { sendEmail } from "@/lib/mail";
 import { getService as svcOf } from "@/lib/shop";
 import { notifyOwner } from "@/lib/notify";
-import { store } from "@/lib/store";
+import { store, withStore } from "@/lib/store";
 import { getMech, getService, HOURS, Inquiry, NewInquiry, slotId } from "@/lib/shop";
 
 export const dynamic = "force-dynamic";
@@ -11,13 +11,13 @@ export const dynamic = "force-dynamic";
 const str = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 
 // Owner: full queue.
-export async function GET(req: Request) {
+async function getInquiries(req: Request) {
   if (!isOwner(req)) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   return NextResponse.json({ inquiries: [...store.inquiries].sort((a, b) => b.createdAt - a.createdAt) });
 }
 
 // Public: send an inquiry; holds the slot as pending.
-export async function POST(req: Request) {
+async function postInquiry(req: Request) {
   const body = (await req.json()) as Partial<NewInquiry>;
   const name = str(body.name, 100);
   const contact = str(body.contact, 150);
@@ -73,7 +73,7 @@ async function emailReceipt(inq: Inquiry, origin: string) {
 }
 
 // Owner: confirm, decline, or mark done (creates the receipt and emails it when email is configured).
-export async function PATCH(req: Request) {
+async function patchInquiry(req: Request) {
   if (!isOwner(req)) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const body = await req.json();
   const { id, action } = body;
@@ -120,3 +120,7 @@ export async function PATCH(req: Request) {
   }
   return NextResponse.json({ ok: true });
 }
+
+export const GET = withStore(getInquiries);
+export const POST = withStore(postInquiry, { save: true });
+export const PATCH = withStore(patchInquiry, { save: true });

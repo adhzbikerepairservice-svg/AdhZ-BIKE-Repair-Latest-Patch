@@ -1,4 +1,6 @@
-// Customer <-> mechanic chat. In-memory like the rest of the store: survives hot reloads, resets on restart.
+import { kvGet, kvSet } from "./db";
+
+// Customer <-> mechanic chat. Loaded from the database at the start of a request and saved after changes (see loadChat).
 export interface ChatMessage {
   from: "customer" | "shop" | "ai";
   text: string;
@@ -12,19 +14,22 @@ export interface ChatThread {
   unread: boolean; // true while the shop has not opened the latest customer message
 }
 
-interface ChatStore {
-  threads: Map<string, ChatThread>;
-  ownerSeen: number; // last time the owner dashboard was open (ms since epoch)
+export const threads = new Map<string, ChatThread>();
+let ownerSeen = 0; // last time the owner dashboard was open (ms since epoch)
+
+export async function loadChat() {
+  const [list, seen] = await Promise.all([kvGet<ChatThread[]>("chat"), kvGet<number>("chat_seen")]);
+  threads.clear();
+  for (const t of list ?? []) threads.set(t.id, t);
+  ownerSeen = seen ?? 0;
 }
 
-const g = globalThis as unknown as { __adhzChat2?: ChatStore };
-const store = (g.__adhzChat2 ??= { threads: new Map(), ownerSeen: 0 });
-
-export const threads = store.threads;
+export const saveChat = () => kvSet("chat", [...threads.values()]);
 
 /** The mechanic counts as "away" when the dashboard has not been open for this long. */
 export const AWAY_AFTER_MS = 60 * 1000;
-export const markOwnerSeen = () => {
-  store.ownerSeen = Date.now();
+export const markOwnerSeen = async () => {
+  ownerSeen = Date.now();
+  await kvSet("chat_seen", ownerSeen);
 };
-export const ownerAway = () => Date.now() - store.ownerSeen > AWAY_AFTER_MS;
+export const ownerAway = () => Date.now() - ownerSeen > AWAY_AFTER_MS;

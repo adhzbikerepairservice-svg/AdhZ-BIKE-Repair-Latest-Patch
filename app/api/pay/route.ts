@@ -1,21 +1,21 @@
 import { NextResponse } from "next/server";
 import { notifyOwner } from "@/lib/notify";
 import { payStatusOf, walletAccounts } from "@/lib/payment";
-import { store } from "@/lib/store";
+import { store, withStore } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
 const cleanRef = (v: unknown) => (typeof v === "string" ? v.replace(/\s+/g, "").toUpperCase() : "");
 
 // Public: the shop's e-wallet numbers (shown to customers who choose e-wallet).
-export async function GET() {
-  return NextResponse.json({ wallets: walletAccounts() });
+async function getWallets() {
+  return NextResponse.json({ wallets: await walletAccounts() });
 }
 
 // Public: the customer reports an e-wallet payment. Adrian confirms it in the admin.
 //   { kind: "advance", id, amount, wallet, ref }  a deposit sent right after booking (before the job)
 //   { id, wallet, ref }                           payment of the receipt balance (after the job)
-export async function POST(req: Request) {
+async function postPayment(req: Request) {
   const body = await req.json();
   const inq = store.inquiries.find((i) => i.id === body.id);
   if (!inq) return NextResponse.json({ error: "invalid" }, { status: 400 });
@@ -44,3 +44,6 @@ export async function POST(req: Request) {
   notifyOwner(`Payment submitted: ${inq.name}`, `${r.no} - PHP ${due.toLocaleString("en-PH")} via ${wallet || "e-wallet"}, ref ${ref}. Check your e-wallet, then confirm in the admin.`, origin);
   return NextResponse.json({ ok: true });
 }
+
+export const GET = getWallets;
+export const POST = withStore(postPayment, { save: true });
