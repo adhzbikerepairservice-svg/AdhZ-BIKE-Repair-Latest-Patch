@@ -1,0 +1,9 @@
+node_modules
+.next
+next-env.d.ts
+
+data
+
+.env*
+*.pdf
+tsconfig.tsbuildinfo
