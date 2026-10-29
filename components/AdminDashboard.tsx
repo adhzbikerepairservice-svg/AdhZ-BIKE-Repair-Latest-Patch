@@ -32,7 +32,7 @@ export default function AdminDashboard() {
   const [key, setKey] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
   const [username, setUsername] = useState("");
-  const [mode, setMode] = useState<"gmail" | "password">("gmail");
+  const [mode, setMode] = useState<"gmail" | "password">("password");
   const [gmail, setGmail] = useState("");
   const [step, setStep] = useState<"email" | "code">("email");
   const [code, setCode] = useState("");
@@ -151,9 +151,9 @@ export default function AdminDashboard() {
     const res = await fetch("/api/auth/code", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: gmail }) });
     const d = await res.json().catch(() => ({}));
     if (d.devCode) setNotice(`Development mode: Gmail is not connected yet, so here is your code: ${d.devCode}`);
-    else if (d.notConfigured) { setError("The code could not be emailed because Gmail is not connected on the server yet (the app password is missing). Use the Username tab to sign in for now."); setStep("email"); return; }
+    else if (d.notConfigured) { setError("The code could not be emailed because Gmail is not connected on the server yet (the app password is missing). Use the Password tab to sign in for now."); setStep("email"); return; }
     else if (d.wait) setNotice("A code was just sent. Wait a moment, then use the newest email.");
-    else setNotice(`If ${gmail.trim()} is an admin Gmail, a 6-digit code is on its way. Check Spam too.`);
+    else setNotice(`If ${gmail.trim()} is an admin Gmail, an 8-digit code is on its way. Check Spam too.`);
     setStep("code");
   }
 
@@ -228,11 +228,11 @@ export default function AdminDashboard() {
           <h1>Shop admin</h1>
           <p className="note">Sign in to confirm bookings and answer customers.</p>
           <div className="seg" role="tablist" aria-label="Sign-in method">
-            <button type="button" role="tab" aria-checked={mode === "gmail"} onClick={() => { setMode("gmail"); setError(""); }}>
-              <b>Gmail</b>
-            </button>
             <button type="button" role="tab" aria-checked={mode === "password"} onClick={() => { setMode("password"); setError(""); }}>
-              <b>Username</b>
+              <b>Password</b>
+            </button>
+            <button type="button" role="tab" aria-checked={mode === "gmail"} onClick={() => { setMode("gmail"); setError(""); }}>
+              <b>Forgot password?</b>
             </button>
           </div>
           {mode === "gmail" && (
@@ -249,8 +249,8 @@ export default function AdminDashboard() {
               </label>
               {step === "code" && (
                 <label htmlFor="adminCode">
-                  6-digit code from your email
-                  <input id="adminCode" inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="123456" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} autoFocus />
+                  8-digit code from your email
+                  <input id="adminCode" inputMode="numeric" autoComplete="one-time-code" maxLength={8} placeholder="12345678" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} autoFocus />
                 </label>
               )}
               {notice && <div className="msg good">{notice}</div>}
@@ -259,7 +259,7 @@ export default function AdminDashboard() {
                 Keep me signed in on this device
               </label>
               {error && <div className="msg err">{error}</div>}
-              <button className="btn" type="submit" disabled={step === "email" ? !gmail.includes("@") : code.length < 6}>
+              <button className="btn" type="submit" disabled={step === "email" ? !gmail.includes("@") : code.length < 8}>
                 {step === "email" ? "Email me a code" : "Sign in"}
               </button>
               {step === "code" && (

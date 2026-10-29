@@ -1,14 +1,16 @@
 import crypto from "node:crypto";
-import fs from "node:fs";
-import path from "node:path";
 
 /**
- * Gmail sign-in for the shop admin: a 6-digit code is emailed to an allowed Gmail account; entering it creates a
- * long-lived session token. Allowed accounts: ADMIN_EMAILS (comma separated) or, if unset, GMAIL_USER.
+ * Gmail sign-in for the shop admin ("forgot my password"): an 8-digit code is emailed to an allowed Gmail account;
+ * entering it creates a long-lived session token. Allowed accounts: ADMIN_EMAILS (comma separated) or, if unset,
+ * GMAIL_USER.
+ *
+ * Codes and sessions are signed (HMAC) instead of stored, so they work on serverless hosting where each request can
+ * land on a different instance and nothing can be written to disk. The signing secret is SESSION_SECRET, or else is
+ * derived from the admin password and Gmail app password, so changing either one signs everyone out.
  */
-const DIR = path.join(process.cwd(), "data");
-const FILE = path.join(DIR, "sessions.json");
 const DAYS = 30;
+const CODE_MINUTES = 10;
 
 export const adminEmails = () =>
   (process.env.ADMIN_EMAILS || process.env.GMAIL_USER || "")
@@ -16,35 +18,35 @@ export const adminEmails = () =>
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean);
 
-type Sessions = Record<string, { email: string; exp: number }>;
-const load = (): Sessions => {
-  try {
-    return JSON.parse(fs.readFileSync(FILE, "utf8"));
-  } catch {
-    return {};
-  }
-};
-const save = (s: Sessions) => {
-  fs.mkdirSync(DIR, { recursive: true });
-  fs.writeFileSync(FILE, JSON.stringify(s));
-};
-const hash = (t: string) => crypto.createHash("sha256").update(t).digest("hex");
+const sign = (data: string) =>
+  crypto
+    .createHmac("sha256", process.env.SESSION_SECRET || `${process.env.SHOP_ADMIN_PASSWORD ?? ""}|${process.env.GMAIL_APP_PASSWORD ?? ""}|adhz`)
+    .update(data)
+    .digest("hex");
+
+const same = (a: string, b: string) => a.length === b.length && crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
 
 export function createSession(email: string) {
-  const token = crypto.randomBytes(24).toString("hex");
-  const s = load();
-  const now = Date.now();
-  for (const k of Object.keys(s)) if (s[k].exp < now) delete s[k];
-  s[hash(token)] = { email, exp: now + DAYS * 86400000 };
-  save(s);
-  return token;
+  const body = `${Buffer.from(email).toString("base64url")}.${Date.now() + DAYS * 86400000}`;
+  return `${body}.${sign("session|" + body)}`;
 }
 
 export function sessionValid(token: string) {
-  const e = load()[hash(token)];
-  return !!e && e.exp > Date.now();
+  const [who = "", exp = "", sig = ""] = token.split(".");
+  if (!sig || !same(sig, sign(`session|${who}.${exp}`))) return false;
+  if (Number(exp) <= Date.now()) return false;
+  return adminEmails().includes(Buffer.from(who, "base64url").toString().toLowerCase());
 }
 
-// one-time codes live in memory (they last 10 minutes)
-const g = globalThis as unknown as { __adhzCodes?: Map<string, { code: string; exp: number; tries: number; sent: number }> };
-export const codes = (g.__adhzCodes ??= new Map());
+const slot = () => Math.floor(Date.now() / (CODE_MINUTES * 60000));
+const codeFor = (email: string, n: number) =>
+  String(parseInt(sign(`code|${email}|${n}`).slice(0, 10), 16) % 100000000).padStart(8, "0");
+
+/** The sign-in code for this email right now. It stays the same for a few minutes, so asking twice is harmless. */
+export const makeCode = (email: string) => codeFor(email, slot());
+
+/** A code is good for the 10-minute slot it was made in and the one after it (so 10 to 20 minutes). */
+export const codeValid = (email: string, code: string) => {
+  const n = slot();
+  return [n, n - 1].some((s) => same(code, codeFor(email, s)));
+};
