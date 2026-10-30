@@ -35,7 +35,7 @@ export default function ContactPage() {
           </a>
           <a className="reach-row" href={`mailto:${social.email}`}>
             <span className="qicon"><svg {...i}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg></span>
-            <span><small>Email</small><b>{social.email}</b></span>
+            <span><small>Email</small><b>{social.email.replace("@", "@​")}</b></span>
           </a>
           <a className="reach-row" href={social.shop} target="_blank" rel="noreferrer">
             <span className="qicon fb"><svg {...i}><path d="M14 8h2V4h-3a4 4 0 0 0-4 4v3H7v4h2v6h4v-6h3l1-4h-4V8.500A.5.500 0 0 1 14 8z" /></svg></span>

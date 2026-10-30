@@ -18,6 +18,7 @@ const newId = () =>
 export default function ChatWidget() {
   const path = usePathname();
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false); // on phones the button waits until the visitor scrolls, so the first screen stays clear
   const [id, setId] = useState("");
   const [name, setName] = useState("");
   const [nameInput, setNameInput] = useState("");
@@ -28,6 +29,13 @@ export default function ChatWidget() {
   const [thinking, setThinking] = useState(false);
   const [fast, setFast] = useState(false); // poll every second right after sending, until a reply arrives
   const endRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const on = () => setScrolled(window.scrollY > 320);
+    on();
+    window.addEventListener("scroll", on, { passive: true });
+    return () => window.removeEventListener("scroll", on);
+  }, []);
 
   useEffect(() => {
     try {
@@ -108,7 +116,7 @@ export default function ChatWidget() {
 
   return (
     <>
-      <button type="button" className="chatfab" onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-controls="chatpanel" aria-label={open ? "Close chat" : "Chat with Adrian"} title={open ? "Close chat" : "Chat with Adrian"}>
+      <button type="button" className={`chatfab${scrolled || open ? "" : " wait"}`} onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-controls="chatpanel" aria-label={open ? "Close chat" : "Chat with Adrian"} title={open ? "Close chat" : "Chat with Adrian"}>
         {open ? (
           <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2.200" strokeLinecap="round" aria-hidden>
             <path d="M6 6l12 12M18 6L6 18" />

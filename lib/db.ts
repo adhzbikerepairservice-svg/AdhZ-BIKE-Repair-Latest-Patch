@@ -4,7 +4,7 @@ import postgres from "postgres";
 
 /**
  * Small key/value store for the shop's data (bookings, chats, wallet settings, QR images).
- * With POSTGRES_URL set (Vercel + Supabase) values live in one Postgres table, so they survive on serverless hosting.
+ * With POSTGRES_URL set (Vercel + Supabase) values live in one table in the Supabase Postgres database, so they survive on serverless hosting.
  * Without it (local development) they are JSON files under data/kv.
  */
 const url = process.env.POSTGRES_URL || process.env.DATABASE_URL || "";
@@ -24,10 +24,13 @@ function sql() {
 async function table() {
   const db = sql();
   if (!ready) {
-    ready = Promise.resolve(db`create table if not exists adhz_kv (key text primary key, value jsonb not null)`).catch((e) => {
-      ready = undefined;
-      throw e;
-    });
+    // row level security with no policies: Supabase's public API key can not read or write this table; only this server's direct connection can
+    ready = Promise.resolve(db`create table if not exists adhz_kv (key text primary key, value jsonb not null)`)
+      .then(() => db`alter table adhz_kv enable row level security`)
+      .catch((e) => {
+        ready = undefined;
+        throw e;
+      });
   }
   await ready;
 }

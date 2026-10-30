@@ -44,6 +44,7 @@ export default function AdminDashboard() {
   const [items, setItems] = useState<Inquiry[]>([]);
   const [chats, setChats] = useState<ChatThread[]>([]);
   const [tab, setTab] = useState<Tab>("bookings");
+  const [more, setMore] = useState(false); // phone: the "More" sheet with the less-used tabs
   const [filter, setFilter] = useState<Filter>("pending");
   const [q, setQ] = useState("");
   const [openChat, setOpenChat] = useState("");
@@ -352,6 +353,14 @@ export default function AdminDashboard() {
     payments: "M3 7h18v12H3zM3 11h18M7 15h3",
     alerts: "M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.700 21a2 2 0 0 1-3.400 0",
   };
+  const signOut = () => {
+    forget();
+    setKey(null);
+    setInput("");
+    setUsername("");
+    setMore(false);
+  };
+
   const navIcon = (d: string) => (
     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d={d} />
@@ -376,16 +385,7 @@ export default function AdminDashboard() {
               {n > 0 && <small className="dotcount">{n}</small>}
             </button>
           ))}
-          <button
-            type="button"
-            className="navout"
-            onClick={() => {
-              forget();
-              setKey(null);
-              setInput("");
-              setUsername("");
-            }}
-          >
+          <button type="button" className="navout" onClick={signOut}>
             {navIcon("M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3")}
             <span>Sign out</span>
           </button>
@@ -456,19 +456,23 @@ export default function AdminDashboard() {
                       </h3>
                       <p>
                         <b>{getService(i.service)?.name ?? i.service}</b> · {i.bike}
-                        {i.brand ? ` (${i.brand})` : ""} · {i.contact}
+                        {i.brand ? ` (${i.brand})` : ""}
                       </p>
                       <p>
                         {getMech(i.mech)?.name} · {dayLong(i.date)} at {hourLabel(i.hour)}
                       </p>
-                      <p>
-                        {i.handover === "collect" ? `Home pick-up and delivery (extra fee) · ${i.address || "no address"}` : "Customer brings it in and picks it up"}
-                        {i.pickup ? ` · Wants it ${i.handover === "collect" ? "delivered" : "ready"} ${dayLong(i.pickup)}` : " · Call when ready"}
-                      </p>
-                      {i.notes && <p>&ldquo;{i.notes}&rdquo;</p>}
-                      <p>
-                        Email: <a href={`mailto:${i.email}`}>{i.email}</a> · Will pay by {i.payPref === "ewallet" ? "e-wallet" : "cash"}
-                      </p>
+                      <p>{i.contact}</p>
+                      <details className="inqmore">
+                        <summary>More details</summary>
+                        <p>
+                          {i.handover === "collect" ? `Home pick-up and delivery (extra fee) · ${i.address || "no address"}` : "Customer brings it in and picks it up"}
+                          {i.pickup ? ` · Wants it ${i.handover === "collect" ? "delivered" : "ready"} ${dayLong(i.pickup)}` : " · Call when ready"}
+                        </p>
+                        {i.notes && <p>&ldquo;{i.notes}&rdquo;</p>}
+                        <p>
+                          Email: <a href={`mailto:${i.email}`}>{i.email}</a> · Will pay by {i.payPref === "ewallet" ? "e-wallet" : "cash"}
+                        </p>
+                      </details>
                       {i.advance && (
                         <p>
                           Deposit: ₱{i.advance.amount.toLocaleString("en-PH")} via {i.advance.wallet || "e-wallet"}, ref {i.advance.ref} · {i.advance.status === "confirmed" ? "confirmed" : "waiting for you to check"}{" "}
@@ -761,6 +765,36 @@ export default function AdminDashboard() {
         </div>
       )}
       </div>
+
+      <nav className="admintabs" aria-label="Admin tabs">
+        {TABS.filter(([t]) => ["bookings", "today", "messages"].includes(t)).map(([t, label, n]) => (
+          <button key={t} type="button" aria-current={tab === t ? "page" : undefined} onClick={() => { setTab(t); setMore(false); }}>
+            {navIcon(ICON[t])}
+            <span>{label}</span>
+            {n > 0 && <small className="dotcount">{n}</small>}
+          </button>
+        ))}
+        <button type="button" aria-expanded={more} aria-current={!["bookings", "today", "messages"].includes(tab) ? "page" : undefined} onClick={() => setMore((v) => !v)}>
+          {navIcon("M5 12h.01M12 12h.01M19 12h.01")}
+          <span>More</span>
+        </button>
+      </nav>
+      {more && (
+        <div className="moresheet" role="dialog" aria-label="More admin sections" onClick={() => setMore(false)}>
+          <div onClick={(e) => e.stopPropagation()}>
+            {TABS.filter(([t]) => !["bookings", "today", "messages"].includes(t)).map(([t, label]) => (
+              <button key={t} type="button" aria-current={tab === t ? "page" : undefined} onClick={() => { setTab(t); setMore(false); }}>
+                {navIcon(ICON[t])}
+                <span>{label}</span>
+              </button>
+            ))}
+            <button type="button" className="out" onClick={signOut}>
+              {navIcon("M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3")}
+              <span>Sign out</span>
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

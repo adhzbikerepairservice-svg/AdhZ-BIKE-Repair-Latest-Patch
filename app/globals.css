@@ -1474,3 +1474,159 @@ body:has(.hero) .hero { padding-top: 5.25rem; }
 .wallet-note.good { color: #0a7a3d; }
 .wallet-note.bad { color: #b3261e; }
 .wallet-foot .btn { min-width: 9rem; }
+
+/* 7. Phone comfort ---------------------------------------------------------- */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+button, a, input, select, textarea, label { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+img, svg, video, iframe { max-width: 100%; }
+p, li, td, th, h1, h2, h3, .note { overflow-wrap: anywhere; }
+
+/* fingers: every control is at least 44px tall */
+@media (pointer: coarse) {
+  .btn, .btn.sm, .btn.ghost, .seg button, .tabs button, .monthbar button { min-height: 2.75rem; }
+  input:not([type="checkbox"]):not([type="radio"]), select { min-height: 2.75rem; }
+  .linkbtn { display: inline-flex; align-items: center; min-height: 2.75rem; padding-inline: 0.25rem; }
+  .check input { width: 1.25rem; height: 1.25rem; }
+}
+
+/* small phones */
+@media (max-width: 480px) {
+  .chatpanel { left: 0.5rem; right: 0.5rem; width: auto; max-height: min(34rem, 75dvh); }
+  .wallet-foot { flex-direction: column; align-items: stretch; }
+  .wallet-foot .btn { width: 100%; }
+  .rbtns .btn { min-width: 0; flex: 1 1 100%; }
+}
+
+/* 8. Phone layout fixes and smoother motion ---------------------------------- */
+@media (max-width: 900px) {
+  /* info bar: the separators sit between the cards instead of cutting through the labels */
+  .qcard + .qcard::before { top: 0; bottom: auto; left: 1.25rem; right: 1.25rem; width: auto; height: 1px; }
+
+  /* how it works: number on the left, title and text lined up beside it */
+  .road li { display: grid; grid-template-columns: 3.75rem minmax(0, 1fr); column-gap: 1.25rem; row-gap: 0.25rem; align-items: start; }
+  .road li .node { grid-row: 1 / span 2; }
+  .road li h3 { grid-column: 2; align-self: end; }
+  .road li p { grid-column: 2; align-self: start; max-width: none; }
+
+  /* blurred sticky bars are costly while scrolling on phones */
+  .rail { background: rgb(255 255 255 / 0.98); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+
+@media (max-width: 480px) {
+  .reach { padding: 0.75rem; }
+  .reach-row { gap: 0.75rem; padding: 0.625rem 0.5rem; }
+  .reach-row b { font-size: 1rem; overflow-wrap: break-word; }
+  .hoursbox li { flex-wrap: wrap; gap: 0.25rem 1rem; }
+  .mapframe, .mapart { height: 16rem; }
+  .formcard { padding: 1rem; }
+}
+
+/* touch screens have no hover: do not leave cards lifted or shifted after a tap */
+@media (hover: none) {
+  .tile:hover, .svccard:hover, .reach-row:hover, .choice-card:hover, .btn:hover, .btn:active, .totop.show:hover, .chatfab:hover { transform: none; }
+  .btn:hover { filter: none; }
+}
+
+/* smoother motion: one easing curve, and panels animate the same way they open and close */
+@media (prefers-reduced-motion: no-preference) {
+  .xp-body { transition: grid-template-rows 0.5s var(--ease), opacity 0.35s var(--ease), padding 0.5s var(--ease); }
+  .xp-peek { transition: opacity 0.3s var(--ease), max-height 0.5s var(--ease), padding 0.5s var(--ease); }
+  .btn, .tile, .svccard, .qcard, .reach-row, .choice-card, .slot, .cal-day { transition-duration: 0.35s; }
+  .chatfab, .totop { transition: transform 0.35s var(--ease), opacity 0.35s var(--ease); }
+}
+
+/* phones: less dead space, and decorative motion runs on the GPU so scrolling stays smooth */
+@media (max-width: 700px) {
+  main { min-height: 40svh; }
+  .sitefoot { margin-top: 2.5rem; }
+  body { padding-bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px)); }
+}
+@media (max-width: 900px) and (prefers-reduced-motion: no-preference) {
+  .hero .gear, .ctaband .gear, .hero-bike { will-change: transform; }
+  .ctaband .btn { animation: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+  .reveal.in { animation-duration: 0.7s; }
+}
+
+/* floating buttons on phones: one stack above the bottom bar (chat, then back to top), never over the content */
+.totop { display: inline-flex; align-items: center; gap: 0.5rem; }
+.totop svg { width: 1.125rem; height: 1.125rem; flex: none; }
+@media (max-width: 900px) {
+  body { --float-base: calc(4.75rem + env(safe-area-inset-bottom, 0px) + 0.75rem); }
+  body:has(.bookbar) { --float-base: calc(4.75rem + env(safe-area-inset-bottom, 0px) + 4.5rem); } /* the booking page has its own bar */
+  .chatfab { left: auto; right: max(1rem, env(safe-area-inset-right, 0px)); bottom: var(--float-base); width: 3.5rem; height: 3.5rem; }
+  .chatpanel { bottom: calc(var(--float-base) + 4.25rem); }
+  .totop { right: max(1.375rem, env(safe-area-inset-right, 0px)); bottom: calc(var(--float-base) + 4.25rem); justify-content: center; width: 2.75rem; height: 2.75rem; padding: 0; }
+  .totop span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+@media (max-width: 900px) {
+  .chatfab { transition: transform 0.4s var(--ease), opacity 0.4s var(--ease); }
+  .chatfab.wait { opacity: 0; pointer-events: none; transform: translateY(0.75rem) scale(0.85); }
+}
+
+/* admin on phones: bottom tab bar + "More" sheet, compact stats, calmer booking cards ------------------- */
+.admintabs, .moresheet { display: none; }
+.inqmore { margin-top: 0.125rem; }
+.inqmore summary { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.375rem 0; color: var(--accent); font-size: 0.85rem; font-weight: 600; cursor: pointer; list-style: none; }
+.inqmore summary::-webkit-details-marker { display: none; }
+.inqmore summary::after { content: ""; width: 0.45rem; height: 0.45rem; margin: -0.2rem 0 0 0.25rem; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); transition: transform 0.3s var(--ease); }
+.inqmore[open] summary::after { margin-top: 0.15rem; transform: rotate(-135deg); }
+
+@media (max-width: 900px) {
+  .adminnav { display: none; }
+  .adminshell { gap: 1rem; padding-top: 1rem !important; padding-bottom: 5.5rem; }
+  .adminmain { gap: 1rem; }
+  .adminhello h1 { font-size: 1.4rem; }
+  .adminhello > .note { display: none; }
+
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.625rem; }
+  .stat { flex-direction: row; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; }
+  .stat b { font-size: 1.6rem; }
+  .stat span { margin-top: 0; font-size: 0.8rem; line-height: 1.2; }
+
+  .admintabs { position: fixed; inset: auto 0 0; z-index: 50; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.25rem; padding: 0.375rem 0.5rem calc(0.375rem + env(safe-area-inset-bottom, 0px)); background: rgb(255 255 255 / 0.98); border-top: 1px solid var(--line); box-shadow: 0 -6px 20px rgb(15 31 74 / 0.1); }
+  .admintabs button { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.125rem; min-height: 3.25rem; padding: 0.375rem 0; color: var(--muted); background: none; border: 0; border-radius: 0.75rem; font: 600 0.72rem var(--body); cursor: pointer; transition: color 0.3s var(--ease), background 0.3s var(--ease); }
+  .admintabs button[aria-current="page"] { color: var(--accent); background: var(--accent-soft); }
+  .admintabs .dotcount { position: absolute; top: 0.125rem; left: calc(50% + 0.25rem); margin: 0; }
+
+  .moresheet { position: fixed; inset: 0; z-index: 45; display: flex; align-items: flex-end; background: rgb(15 31 74 / 0.45); }
+  .moresheet > div { display: flex; flex-direction: column; width: 100%; padding: 0.75rem 0.75rem calc(5.5rem + env(safe-area-inset-bottom, 0px)); background: var(--surface); border-radius: 1.25rem 1.25rem 0 0; box-shadow: 0 -12px 32px rgb(15 31 74 / 0.2); }
+  .moresheet button { display: flex; align-items: center; gap: 0.875rem; min-height: 3.25rem; padding: 0.75rem 1rem; color: var(--ink); background: none; border: 0; border-radius: 0.75rem; font: 500 1rem var(--body); text-align: left; cursor: pointer; }
+  .moresheet button[aria-current="page"] { color: #fff; background: var(--gradient); }
+  .moresheet .out { color: var(--bad); }
+
+  .inq { gap: 0.625rem; padding: 0.875rem; }
+  .acts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+  .acts .btn { width: 100%; text-align: center; }
+  .acts .btn:not(.ghost) { grid-column: 1 / -1; }
+  .inbox-top input { width: 100%; max-width: none; }
+}
+@media (max-width: 900px) and (prefers-reduced-motion: no-preference) {
+  .moresheet { animation: fade-soft 0.25s var(--ease); }
+  .moresheet > div { animation: sheet-up 0.35s var(--ease); }
+  @keyframes sheet-up { from { transform: translateY(100%); } }
+}
+
+/* home services on phones: a swipeable row of cards with a peek of the next one, and dots underneath */
+.xp-blurb, .xp-dots { display: none; }
+@media (max-width: 900px) {
+  .xpwrap { margin-inline: calc(-1 * var(--gutter)); }
+  .xpanels { flex-direction: row; gap: 0.75rem; height: auto; padding: 0.25rem var(--gutter) 1rem; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding-inline: var(--gutter); scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .xpanels::-webkit-scrollbar { display: none; }
+  .xp, .xp.on { flex: 0 0 min(80%, 20rem); scroll-snap-align: start; color: #fff; background: var(--gradient); border-color: transparent; border-bottom: 0.3125rem solid var(--gold); box-shadow: var(--shadow); }
+  .xp-head { flex: none; flex-direction: column; align-items: flex-start; gap: 0.875rem; padding: 1.25rem 1.25rem 0.75rem; pointer-events: none; }
+  .xp .tile-icon { color: var(--accent); background: #fff; box-shadow: none; transform: rotate(-6deg); }
+  .xp-title b { font-size: 1.45rem; }
+  .xp-title small { color: rgb(255 255 255 / 0.8); }
+  .xp .xp-body { flex: 1; grid-template-rows: 1fr; padding: 0 1.25rem 1.25rem; opacity: 1; }
+  .xp-body > div { display: flex; flex-direction: column; height: 100%; }
+  .xp-blurb { display: block; margin: 0 0 0.875rem; color: rgb(255 255 255 / 0.9); font-size: 0.95rem; line-height: 1.45; }
+  .xp-body ul { margin-bottom: 1.25rem; }
+  .xp-actions { margin-top: auto; }
+  .xp-peek { display: none; }
+  .xp-dots { display: flex; justify-content: center; gap: 0.5rem; }
+  .xp-dots button { width: 0.5rem; height: 0.5rem; padding: 0; background: rgb(31 82 196 / 0.22); border: 0; border-radius: 999px; cursor: pointer; transition: width 0.35s var(--ease), background 0.35s var(--ease); }
+  .xp-dots button[aria-current="true"] { width: 1.5rem; background: var(--accent); }
+}
