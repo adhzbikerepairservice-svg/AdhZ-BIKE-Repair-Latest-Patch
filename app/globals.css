@@ -44,7 +44,7 @@
   --gradient: linear-gradient(115deg, var(--blue-deep) 0%, var(--blue) 42%, var(--blue-light) 100%);
 
   /* layout: one gutter drives the nav, hero, page content and footer */
-  --maxw: max(105rem, 82vw);
+  --maxw: clamp(60rem, 82vw, 90rem); /* content stops growing on very wide screens */
   --pad: clamp(1rem, 4vw, 4rem);
   --gutter: max(var(--pad), calc((100vw - var(--maxw)) / 2));
 
@@ -238,7 +238,7 @@ textarea { min-height: 5.5rem; resize: vertical; }
 .slot.owner { cursor: pointer; }
 
 .skeleton { min-height: 22.5rem; background: linear-gradient(100deg, var(--surface) 30%, var(--accent-soft) 50%, var(--surface) 70%) 0 0 / 200% 100%; }
-@media (prefers-reduced-motion: no-preference) { .skeleton { animation: shimmer 1.4s linear infinite; } @keyframes shimmer { to { background-position: -200% 0; } } }
+@media all { .skeleton { animation: shimmer 1.4s linear infinite; } @keyframes shimmer { to { background-position: -200% 0; } } }
 
 .legend { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 0.75rem; color: var(--muted); font-size: 0.82rem; }
 .legend i { display: inline-block; width: 0.75rem; height: 0.75rem; margin-right: 6px; vertical-align: -1px; border: 1.5px solid; border-radius: 3px; }
@@ -406,7 +406,7 @@ main > section:first-child { padding-top: 3rem; }
 .leftcol { display: flex; flex-direction: column; gap: 1.5rem; min-width: 0; }
 
 /* motion (disabled for visitors who prefer reduced motion) */
-@media (prefers-reduced-motion: no-preference) {
+@media all {
   @keyframes rise { from { opacity: 0; transform: translateY(1.125rem); } to { opacity: 1; transform: none; } }
   @keyframes spin { to { transform: rotate(360deg); } }
   .hero-copy > * { animation: rise 0.6s both; }
@@ -433,7 +433,7 @@ main > section:first-child { padding-top: 3rem; }
   .wheel .tyre, .wheel .spokes { animation: wheel-roll var(--cycle) 0.2s linear infinite both; }
   .hero .gear { animation: spin 90s linear infinite; }
 }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+@media not all { html { scroll-behavior: auto; } }
 
 /* 6. Responsive ------------------------------------------------------------ */
 @media (max-width: 1100px) {
@@ -510,7 +510,7 @@ main > section:first-child { padding-top: 3rem; }
    ========================================================================== */
 a, button, input, select, textarea { transition-property: background-color, border-color, color, box-shadow, transform, opacity; transition-duration: 0.2s; }
 
-@media (prefers-reduced-motion: no-preference) {
+@media all {
   @keyframes reveal-up { from { opacity: 0; transform: translateY(1.75rem); } }
   @keyframes page-in { from { opacity: 0; transform: translateY(0.75rem); } }
   @keyframes drop-in { from { opacity: 0; transform: translateY(-100%); } }
@@ -588,7 +588,7 @@ a, button, input, select, textarea { transition-property: background-color, bord
 .linkbtn { padding: 0; color: var(--accent); background: none; border: 0; font-size: 0.82rem; font-weight: 600; text-decoration: underline; cursor: pointer; }
 .mapsub .note { color: var(--muted); }
 @media (max-width: 900px) { .mapart { position: static; height: 20rem; } }
-@media (prefers-reduced-motion: no-preference) {
+@media all {
   @keyframes draw { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }
   @keyframes pin-ping { 0% { transform: scale(0.6); opacity: 0.9; } 100% { transform: scale(3); opacity: 0; } }
   .route { stroke-dasharray: 1000; animation: draw 3s 0.4s ease-out both; }
@@ -630,7 +630,7 @@ a, button, input, select, textarea { transition-property: background-color, bord
 .summary dd { margin: 0; color: var(--muted); }
 .summary .set dd { color: var(--ink); font-weight: 600; }
 @media (max-width: 900px) { .summary { position: static; } .choice { grid-template-columns: 1fr; } }
-@media (prefers-reduced-motion: no-preference) { .wizard { animation: fade-swap 0.35s ease-out; } }
+@media all { .wizard { animation: fade-swap 0.35s ease-out; } }
 
 /* showcase */
 .showband { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 2.25rem 2.5rem; background: var(--surface); border: 1.5px solid var(--line); border-left: 0.5rem solid var(--gold); border-radius: var(--radius); box-shadow: var(--shadow-sm); }
@@ -735,7 +735,7 @@ div.qcard em { color: var(--muted); }
 .finder-card p { opacity: 0.92; }
 .finder-card .btn { margin-top: 0.5rem; color: #1a1400; background: var(--gold); box-shadow: none; }
 .finder-card.idle p { opacity: 0.8; }
-@media (prefers-reduced-motion: no-preference) { .finder-card:not(.idle) { animation: pop-in 0.4s ease-out; } @keyframes pop-in { from { opacity: 0; transform: translateY(0.75rem); } } }
+@media all { .finder-card:not(.idle) { animation: pop-in 0.4s ease-out; } @keyframes pop-in { from { opacity: 0; transform: translateY(0.75rem); } } }
 @media (max-width: 900px) { .finder { grid-template-columns: 1fr; } .finder-ask, .finder-result { padding: 1.5rem; } }
 
 /* back to top */
@@ -766,7 +766,7 @@ div.qcard em { color: var(--muted); }
 /* "How it works": a bike rides the road from step to step, and the steps light up as it passes */
 .road > .road-bike { display: none; position: absolute; z-index: 2; left: 16.6%; top: 0.375rem; width: 3.25rem; height: 2.5rem; margin-left: -1.625rem; background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2040%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%231f52c4%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2213%22%20cy%3D%2228%22%20r%3D%229%22%20fill%3D%22%23fff%22%2F%3E%3Ccircle%20cx%3D%2251%22%20cy%3D%2228%22%20r%3D%229%22%20fill%3D%22%23fff%22%2F%3E%3Cpath%20d%3D%22M13%2028%20L25%2012%20L42%2012%20L51%2028%20M25%2012%20L30%2028%20L13%2028%20M42%2012%20L39%206%20L46%206%20M22%207%20L28%207%22%20stroke%3D%22%23f2b922%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") center / contain no-repeat; pointer-events: none; }
 .road li .node { transition: transform 0.3s, box-shadow 0.3s; }
-@media (prefers-reduced-motion: no-preference) and (min-width: 901px) {
+@media (min-width: 901px) {
   @keyframes ride { 0%, 8% { left: 16.6%; } 38%, 46% { left: 50%; } 76%, 92% { left: 83.4%; } 100% { left: 16.6%; opacity: 0; } 99% { opacity: 1; } }
   @keyframes stop-glow { 0%, 100% { transform: scale(1); } 8%, 14% { transform: scale(1.18); } }
   .road > .road-bike { display: block; animation: ride 9s ease-in-out infinite; }
@@ -833,7 +833,7 @@ div.qcard em { color: var(--muted); }
 *, *::before, *::after { transition-timing-function: var(--ease) !important; }
 a, button, input, select, textarea, .btn, .tile, .svc, .choice-card, .chip, .cal-day, .slot, .reach-row, .qcard, .monthbar button, .tabs button, .finder-chips button { transition-duration: 0.3s; }
 
-@media (prefers-reduced-motion: no-preference) {
+@media all {
   @keyframes reveal-soft { from { opacity: 0; transform: translateY(1.25rem); } to { opacity: 1; transform: none; } }
   @keyframes chat-in { from { opacity: 0; transform: translateY(0.75rem) scale(0.96); } to { opacity: 1; transform: none; } }
   @keyframes fade-soft { from { opacity: 0; } to { opacity: 1; } }
@@ -853,7 +853,7 @@ a, button, input, select, textarea, .btn, .tile, .svc, .choice-card, .chip, .cal
 }
 
 /* reduced motion: no animation, no travelling transitions */
-@media (prefers-reduced-motion: reduce) {
+@media not all {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
 
@@ -880,7 +880,7 @@ button.stat:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
 .aitag { display: block; margin-bottom: 0.125rem; color: var(--accent); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 .bubble.typing { display: flex; gap: 0.25rem; padding: 0.75rem 1rem; }
 .bubble.typing span { width: 0.4rem; height: 0.4rem; background: var(--accent); border-radius: 50%; opacity: 0.4; }
-@media (prefers-reduced-motion: no-preference) { .bubble.typing span { animation: blink 1.2s infinite; } .bubble.typing span:nth-child(2) { animation-delay: 0.2s; } .bubble.typing span:nth-child(3) { animation-delay: 0.4s; } @keyframes blink { 40% { opacity: 1; transform: translateY(-0.2rem); } } }
+@media all { .bubble.typing span { animation: blink 1.2s infinite; } .bubble.typing span:nth-child(2) { animation-delay: 0.2s; } .bubble.typing span:nth-child(3) { animation-delay: 0.4s; } @keyframes blink { 40% { opacity: 1; transform: translateY(-0.2rem); } } }
 
 /* admin chat inbox: conversation list + thread */
 .inboxchat { display: grid; grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr); min-height: 30rem; overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-sm); }
@@ -968,7 +968,7 @@ button.stat:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
 /* "How it works" bike: slides with a GPU transform (container-query units), never touched by the scroll-reveal animation */
 .road { container-type: inline-size; }
 .road > .road-bike { left: 0; opacity: 0; transform: translateX(calc(16.6cqw - 1.625rem)); }
-@media (prefers-reduced-motion: no-preference) and (min-width: 901px) {
+@media (min-width: 901px) {
   @keyframes ride2 {
     0%   { opacity: 0; transform: translateX(calc(16.6cqw - 1.625rem)); }
     5%, 8% { opacity: 1; transform: translateX(calc(16.6cqw - 1.625rem)); }
@@ -1063,7 +1063,7 @@ button.stat:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
 /* page transitions */
 .routebar { position: fixed; inset: 0 0 auto; z-index: 60; height: 3px; background: linear-gradient(90deg, var(--gold), var(--blue-light)); transform: scaleX(0); transform-origin: left; opacity: 0; pointer-events: none; }
 .routebar.on { opacity: 1; transform: scaleX(0.85); transition: transform 8s cubic-bezier(0.1, 0.8, 0.2, 1), opacity 0.2s; }
-@media (prefers-reduced-motion: no-preference) {
+@media all {
   @keyframes page-enter { from { opacity: 0; transform: translateY(1.5rem); } to { opacity: 1; transform: none; } }
   /* "backwards" only: nothing is left applied after the animation, so sticky and fixed children keep working */
   .page { animation: page-enter 0.55s var(--ease) backwards; }
@@ -1323,7 +1323,7 @@ body:has(.hero) .hero { padding-top: 5.25rem; }
 .fitem { opacity: 0.9; }
 .fresult .btn { margin-top: 0.5rem; }
 .fidle { opacity: 0.85; }
-@media (prefers-reduced-motion: no-preference) { .fresult-in { animation: fade-soft 0.4s var(--ease); } }
+@media all { .fresult-in { animation: fade-soft 0.4s var(--ease); } }
 @media (max-width: 900px) { .finder2 { grid-template-columns: 1fr; grid-template-areas: "head" "grid" "result"; padding: 1.25rem; } .finder2-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 /* finder: "Something else" is a full-width row so the 3x2 grid stays even; the result card stays compact */
@@ -1358,7 +1358,7 @@ body:has(.hero) .hero { padding-top: 5.25rem; }
 .stabs-list li b { flex: 1; font-weight: 600; font-size: 1.05rem; }
 .stabs-go { padding: 0.375rem 1rem; color: var(--accent); background: var(--accent-soft); border-radius: 999px; font-weight: 600; font-size: 0.88rem; text-decoration: none; transition: background 0.25s, color 0.25s; }
 .stabs-go:hover { color: #fff; background: var(--accent); }
-@media (prefers-reduced-motion: no-preference) { .stabs-body { animation: fade-soft 0.4s var(--ease); } }
+@media all { .stabs-body { animation: fade-soft 0.4s var(--ease); } }
 @media (max-width: 900px) { .stabs-body { grid-template-columns: 1fr; } .stabs-bar { grid-template-columns: 1fr; } .stabs-side { padding: 1.5rem; } }
 
 /* diagnosis: an interactive bike with glowing hotspots */
@@ -1381,7 +1381,7 @@ body:has(.hero) .hero { padding-top: 5.25rem; }
 .diag-idle b { font: 600 1.4rem var(--display); }
 .diag-idle span { opacity: 0.85; }
 .diag-else { align-self: flex-start; margin-top: auto; color: #fff; opacity: 0.9; }
-@media (prefers-reduced-motion: no-preference) {
+@media all {
   .hot-ring { animation: hot-ping 2.2s infinite; }
   .hot[aria-pressed="true"] .hot-ring { animation: none; }
   @keyframes hot-ping { 70% { box-shadow: 0 0 0 0.875rem rgb(31 82 196 / 0), 0 4px 10px rgb(31 82 196 / 0.4); } 100% { box-shadow: 0 0 0 0 rgb(31 82 196 / 0), 0 4px 10px rgb(31 82 196 / 0.4); } }
@@ -1438,7 +1438,7 @@ body:has(.hero) .hero { padding-top: 5.25rem; }
 .qlive i { width: 0.625rem; height: 0.625rem; background: currentColor; border-radius: 50%; }
 .qlive.open { color: #146c3b; background: #e0f5e9; }
 .qlive.closed { color: #a12b2b; background: #fbe3e3; }
-@media (prefers-reduced-motion: no-preference) { .qlive.open i { animation: ping 1.8s infinite; box-shadow: 0 0 0 0 rgb(31 157 85 / 0.5); } @keyframes ping { 70% { box-shadow: 0 0 0 0.5rem rgb(31 157 85 / 0); } 100% { box-shadow: 0 0 0 0 rgb(31 157 85 / 0); } } }
+@media all { .qlive.open i { animation: ping 1.8s infinite; box-shadow: 0 0 0 0 rgb(31 157 85 / 0.5); } @keyframes ping { 70% { box-shadow: 0 0 0 0.5rem rgb(31 157 85 / 0); } 100% { box-shadow: 0 0 0 0 rgb(31 157 85 / 0); } } }
 @media (max-width: 900px) { .qcard { padding: 1rem 1.25rem; } }
 .qtext b { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.25; }
 .qtext em { margin-top: 0.125rem; color: var(--muted); font-size: 0.8rem; font-style: normal; }
@@ -1521,14 +1521,9 @@ p, li, td, th, h1, h2, h3, .note { overflow-wrap: anywhere; }
   .formcard { padding: 1rem; }
 }
 
-/* touch screens have no hover: do not leave cards lifted or shifted after a tap */
-@media (hover: none) {
-  .tile:hover, .svccard:hover, .reach-row:hover, .choice-card:hover, .btn:hover, .btn:active, .totop.show:hover, .chatfab:hover { transform: none; }
-  .btn:hover { filter: none; }
-}
 
 /* smoother motion: one easing curve, and panels animate the same way they open and close */
-@media (prefers-reduced-motion: no-preference) {
+@media all {
   .xp-body { transition: grid-template-rows 0.5s var(--ease), opacity 0.35s var(--ease), padding 0.5s var(--ease); }
   .xp-peek { transition: opacity 0.3s var(--ease), max-height 0.5s var(--ease), padding 0.5s var(--ease); }
   .btn, .tile, .svccard, .qcard, .reach-row, .choice-card, .slot, .cal-day { transition-duration: 0.35s; }
@@ -1541,13 +1536,11 @@ p, li, td, th, h1, h2, h3, .note { overflow-wrap: anywhere; }
   .sitefoot { margin-top: 2.5rem; }
   body { padding-bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px)); }
 }
-@media (max-width: 900px) and (prefers-reduced-motion: no-preference) {
+@media (max-width: 900px) {
   .hero .gear, .ctaband .gear, .hero-bike { will-change: transform; }
-  .ctaband .btn { animation: none; }
 }
-@media (prefers-reduced-motion: no-preference) {
+@media all {
   html { scroll-behavior: smooth; }
-  .reveal.in { animation-duration: 0.7s; }
 }
 
 /* floating buttons on phones: one stack above the bottom bar (chat, then back to top), never over the content */
@@ -1603,7 +1596,7 @@ p, li, td, th, h1, h2, h3, .note { overflow-wrap: anywhere; }
   .acts .btn:not(.ghost) { grid-column: 1 / -1; }
   .inbox-top input { width: 100%; max-width: none; }
 }
-@media (max-width: 900px) and (prefers-reduced-motion: no-preference) {
+@media (max-width: 900px) {
   .moresheet { animation: fade-soft 0.25s var(--ease); }
   .moresheet > div { animation: sheet-up 0.35s var(--ease); }
   @keyframes sheet-up { from { transform: translateY(100%); } }
@@ -1629,4 +1622,134 @@ p, li, td, th, h1, h2, h3, .note { overflow-wrap: anywhere; }
   .xp-dots { display: flex; justify-content: center; gap: 0.5rem; }
   .xp-dots button { width: 0.5rem; height: 0.5rem; padding: 0; background: rgb(31 82 196 / 0.22); border: 0; border-radius: 999px; cursor: pointer; transition: width 0.35s var(--ease), background 0.35s var(--ease); }
   .xp-dots button[aria-current="true"] { width: 1.5rem; background: var(--accent); }
+}
+
+/* admin on phones, round two: one big "waiting for you" banner, quiet tiles, calmer filters ------------- */
+.inbox .empty { display: flex; flex-direction: column; align-items: center; gap: 0.625rem; padding: 2rem 1.25rem; text-align: center; background: var(--surface); }
+.inbox .empty::before { content: ""; width: 3rem; height: 3rem; background: var(--accent-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231f52c4' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l4 4 10-10'/%3E%3C/svg%3E") center / 1.5rem no-repeat; border-radius: 50%; }
+
+@media (max-width: 900px) {
+  .adminmain .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.625rem; }
+  .stat { flex-direction: column; align-items: flex-start; gap: 0.125rem; padding: 0.75rem 0.875rem; }
+  .stat b { font-size: 1.5rem; }
+  .stat span { font-size: 0.72rem; line-height: 1.2; }
+  .stat.warn { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 0.75rem; padding: 1rem 1.25rem; }
+  .stat.warn b { font-size: 2.25rem; }
+  .stat.warn span { flex: 1; font-size: 1rem; font-weight: 600; }
+  .stat.warn::after { content: ""; width: 0.6rem; height: 0.6rem; border: solid #fff; border-width: 2px 2px 0 0; opacity: 0.85; transform: rotate(45deg); }
+
+  .inbox-top { flex-direction: column; align-items: stretch; gap: 0.625rem; }
+  .inbox-top .tabs { min-width: 0; max-width: 100%; overflow-x: auto; gap: 0.5rem; padding: 0.125rem 1.5rem 0.125rem 0; background: none; border: 0; border-radius: 0; scrollbar-width: none; scroll-snap-type: x proximity; -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent); }
+  .inbox-top .tabs::-webkit-scrollbar { display: none; }
+  .inbox-top .tabs button { white-space: nowrap; scroll-snap-align: start; background: var(--surface); border: 1px solid var(--line); }
+  .inbox-top .tabs button[aria-selected="true"] { color: #fff; background: var(--accent); border-color: var(--accent); }
+  .inbox-top input[type="search"] { padding-left: 2.5rem; background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235b6688' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E") no-repeat 0.875rem center / 1.1rem; }
+}
+
+/* iPhone SE and other small phones (320 to 375px wide, down to 568px tall) ------------------------------ */
+html { overflow-x: clip; }
+.adminshell, .adminmain, .inbox, .inbox-top, .queue, .inq, .inq > div, .acts { min-width: 0; max-width: 100%; }
+
+@media (max-width: 380px) {
+  :root { --pad: 0.875rem; }
+  h2 { font-size: 1.45rem; }
+  .hero h1 { font-size: clamp(1.8rem, 9vw, 2.4rem); }
+  .hero .cta { flex-wrap: wrap; }
+  .hero .cta .btn { padding: 0.8rem 1.25rem; font-size: 1rem; }
+  .qcard { gap: 0.75rem; padding: 0.875rem 1rem; }
+  .xp, .xp.on { flex-basis: 86%; }
+  .chatpanel { left: 0.5rem; right: 0.5rem; }
+  .bottomnav a, .admintabs button { font-size: 0.64rem; }
+
+  .stat { padding: 0.625rem 0.75rem; }
+  .stat b { font-size: 1.3rem; }
+  .stat span { font-size: 0.68rem; }
+  .stat.warn b { font-size: 1.9rem; }
+  .stat.warn span { font-size: 0.95rem; }
+  .inbox-top .tabs button { padding: 0.5rem 0.75rem; font-size: 0.82rem; }
+  .inq h3 { font-size: 1.05rem; }
+  .acts { gap: 0.375rem; }
+  .acts .btn.ghost { padding: 0.5rem 0.25rem; font-size: 0.82rem; }
+}
+
+/* the original iPhone SE (320px): two tiles per row, tighter header */
+@media (max-width: 340px) {
+  .adminhello h1 { font-size: 1.2rem; }
+  .logo span { font-size: 1.2rem; }
+  .topnav { gap: 0.5rem; }
+  .btn { padding-inline: 0.875rem; font-size: 0.95rem; }
+}
+
+/* short screens (SE is 667px or 568px tall): leave room for the content above the bars */
+@media (max-width: 900px) and (max-height: 700px) {
+  .hero-copy { padding-block: 1.5rem calc(69vw + 4rem); }
+  .moresheet > div { max-height: 85dvh; overflow-y: auto; }
+  .chatpanel { max-height: 65dvh; }
+}
+@media (max-width: 900px) {
+  .acts .btn { display: flex; align-items: center; justify-content: center; }
+}
+
+/* calmer scale on phones, and no zoom-in when a text box is tapped (iOS zooms any box under 16px) */
+@media (max-width: 480px) {
+  html { font-size: 15px; }
+}
+@media (max-width: 900px) {
+  input, select, textarea { font-size: max(16px, 1rem); }
+}
+
+/* the admin is a tool, not a showcase: a little smaller on phones so more fits without zooming */
+@media (max-width: 480px) {
+  html:has(.adminshell) { font-size: 14px; }
+}
+
+/* phone hero: clear of the floating nav bar, readable text, same overall height */
+@media (max-width: 700px) {
+  /* the ADHZ watermark stays but sits in the clear strip above the road, behind the bike; the gear tucks into the corner */
+  .hero .wm { inset: auto 0 var(--band) 0; place-items: end center; padding-bottom: 0.5rem; font-size: clamp(4rem, 22vw, 6rem); opacity: 0.12; }
+  .hero .g1 { top: -4.5rem; left: -5.5rem; width: 15rem; }
+  .hero-copy { gap: 0.625rem; padding-block: 4.5rem calc(69vw + 4.5rem); }
+  .hero h1 { line-height: 1.08; }
+  .hero .tagline { font-size: 1rem; }
+}
+
+/* phones: no footer (the info bar, Contact page and bottom bar already carry the address and phone number) */
+@media (max-width: 700px) {
+  .sitefoot { display: none; }
+}
+
+/* booking: on phones the details and payment cards open once a service and a time are chosen */
+.gatehint { display: none; }
+#fTime, #fDetails, #fService { scroll-margin-top: 5.5rem; }
+@media (max-width: 900px) {
+  .gated:not(.ready) .formcard, .gated:not(.ready) > .btn, .gated:not(.ready) > .note { display: none; }
+  .gated:not(.ready) .gatehint { display: block; padding: 1rem 1.125rem; color: var(--muted); background: var(--surface); border: 1.5px dashed var(--line); border-radius: 1rem; font-size: 0.9rem; text-align: center; }
+  .gated.ready .formcard, .gated.ready > .btn { animation: fade-soft 0.5s var(--ease) both; }
+}
+
+/* services: description, help row, and a compact three-up tab bar on phones */
+.stabs-hint { color: rgb(255 255 255 / 0.8); font-size: 0.82rem; }
+.stabs-list li.stabs-help { justify-content: center; flex-wrap: wrap; gap: 0.25rem 0.75rem; padding: 1rem 0; color: var(--muted); font-size: 0.92rem; }
+.stabs-list li.stabs-help:hover { padding-left: 0; }
+@media (max-width: 900px) {
+  .stabs-bar { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.375rem; padding: 0.375rem; }
+  .stabs-bar button { flex-direction: column; justify-content: center; gap: 0.375rem; padding: 0.75rem 0.25rem; text-align: center; }
+  .stabs-bar button small { display: none; }
+  .stabs-bar b { font-size: 0.85rem; }
+  .stabs-side { padding: 1.25rem; }
+  .stabs-side h2 { font-size: 1.6rem; }
+}
+
+/* booking step 1: service cards that describe themselves, then the exact job as tappable chips */
+.svcpick-text { display: flex; flex-direction: column; flex: 1; gap: 0.25rem; min-width: 0; }
+.itempick { margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--line); animation: fade-soft 0.45s var(--ease) both; }
+.itempick-label { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 0.625rem; font-size: 0.95rem; font-weight: 600; }
+.itempick-label small { color: var(--muted); font-size: 0.78rem; font-weight: 500; }
+.itempick-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.625rem; }
+.ichip { padding: 0.5rem 0.875rem; color: var(--ink); background: var(--paper); border: 1.5px solid var(--line); border-radius: 999px; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: background 0.3s var(--ease), border-color 0.3s var(--ease), color 0.3s var(--ease), box-shadow 0.3s var(--ease), transform 0.3s var(--ease); }
+.ichip:hover { border-color: var(--accent); transform: translateY(-1px); }
+.ichip[aria-checked="true"] { color: #fff; background: var(--accent); border-color: var(--accent); box-shadow: 0 6px 14px rgb(31 82 196 / 0.28); }
+@media (max-width: 900px) {
+  .svcpick { align-items: center; }
+  .svcpick small { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 }

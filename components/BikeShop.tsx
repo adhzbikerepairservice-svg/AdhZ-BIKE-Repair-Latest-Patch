@@ -8,6 +8,12 @@ import { ICONS } from "./Services";
 
 const POLL_MS = 5000;
 
+/** On phones the steps are far apart, so after a choice the page glides to the next step. */
+function glideTo(id: string) {
+  if (typeof window === "undefined" || !window.matchMedia("(max-width: 900px)").matches) return;
+  setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }), 200);
+}
+
 export default function BikeShop({ initialService = "", initialItem = "" }: { initialService?: string; initialItem?: string }) {
   // Dates depend on the current time, so they are computed after mount to avoid hydration mismatch.
   const [dates, setDates] = useState<Date[]>([]);
@@ -15,6 +21,8 @@ export default function BikeShop({ initialService = "", initialItem = "" }: { in
   const [slots, setSlots] = useState<Map<string, Slot>>(new Map());
   const [sel, setSel] = useState<Pick | null>(null);
   const [service, setService] = useState(initialService);
+  const [item, setItem] = useState(initialItem); // the exact job inside the service (optional)
+  const picked = SHOP.services.find((s) => s.id === service);
   useEffect(() => {
     const ds = buildDates();
     setDates(ds);
@@ -80,16 +88,46 @@ export default function BikeShop({ initialService = "", initialItem = "" }: { in
               </h3>
               <div id="fService" tabIndex={-1} className="svcpicks" role="radiogroup" aria-label="Service">
                 {SHOP.services.map((sv) => (
-                  <button key={sv.id} type="button" role="radio" aria-checked={service === sv.id} className="svcpick" onClick={() => setService(sv.id)}>
+                  <button key={sv.id} type="button" role="radio" aria-checked={service === sv.id} className="svcpick" onClick={() => { if (service !== sv.id) setItem(""); setService(sv.id); }}>
                     <span className="tile-icon" aria-hidden>
                       {ICONS[sv.id]}
                     </span>
-                    <b>{sv.name}</b>
-                    <small>{sv.items.slice(0, 2).join(" · ")}</small>
+                    <span className="svcpick-text">
+                      <b>{sv.name}</b>
+                      <small>{sv.blurb}</small>
+                    </span>
                     <i className="tick" aria-hidden>&#10003;</i>
                   </button>
                 ))}
               </div>
+              {picked && (
+                <div className="itempick" key={picked.id}>
+                  <p className="itempick-label">
+                    What do you need? <small>Optional</small>
+                  </p>
+                  <div className="itempick-chips" role="radiogroup" aria-label="Exact service">
+                    {picked.items.map((it) => (
+                      <button
+                        key={it}
+                        type="button"
+                        role="radio"
+                        aria-checked={item === it}
+                        className="ichip"
+                        onClick={() => {
+                          const next = item === it ? "" : it;
+                          setItem(next);
+                          if (next && !sel) glideTo("fTime");
+                        }}
+                      >
+                        {it}
+                      </button>
+                    ))}
+                  </div>
+                  <button type="button" className="linkbtn" onClick={() => glideTo("fTime")}>
+                    Not sure? Skip, Adrian will check it with you
+                  </button>
+                </div>
+              )}
             </div>
             <div id="fTime">
               <h3 className="steph">
@@ -103,10 +141,11 @@ export default function BikeShop({ initialService = "", initialItem = "" }: { in
                   sel={sel}
                   owner={false}
                   onDate={setDate}
-                  onCell={(mech, hour) => setSel({ date, mech, hour })}
+                  onCell={(mech, hour) => { setSel({ date, mech, hour }); if (service) glideTo("fDetails"); }}
                   onPick={(pick) => {
                     setDate(pick.date);
                     setSel(pick);
+                    if (service) glideTo("fDetails");
                   }}
                 />
               ) : (
@@ -116,6 +155,7 @@ export default function BikeShop({ initialService = "", initialItem = "" }: { in
           </div>
           <InquiryForm
             initialItem={initialItem}
+            item={item}
             sel={sel}
             service={service}
             onAnother={() => setService("")}

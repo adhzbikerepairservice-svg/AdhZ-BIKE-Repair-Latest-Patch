@@ -6,6 +6,7 @@ import type { Pick } from "./Schedule";
 
 interface Props {
   initialItem?: string;
+  item?: string; // the exact job picked in step 1, if any
   sel: Pick | null;
   service: string;
   onSent: () => void;
@@ -15,13 +16,18 @@ interface Props {
 
 const BIKES = ["Road", "Mountain", "Hybrid / city", "Folding", "E-bike", "BMX / kids", "Other"];
 
-export default function InquiryForm({ initialItem = "", sel, service, onSent, onTaken, onAnother }: Props) {
+export default function InquiryForm({ initialItem = "", item, sel, service, onSent, onTaken, onAnother }: Props) {
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
   const [email, setEmail] = useState("");
   const [bike, setBike] = useState(BIKES[0]);
   const [brand, setBrand] = useState("");
   const [notes, setNotes] = useState(initialItem ? `I would like: ${initialItem}.` : "");
+  // picking (or changing) the exact job fills the notes, unless the customer already wrote their own
+  useEffect(() => {
+    if (item === undefined) return;
+    setNotes((n) => (!n || n.startsWith("I would like: ") ? (item ? `I would like: ${item}.` : "") : n));
+  }, [item]);
   const [handover, setHandover] = useState<"bring" | "collect">("bring");
   const [address, setAddress] = useState("");
   const [pickup, setPickup] = useState("");
@@ -171,7 +177,7 @@ export default function InquiryForm({ initialItem = "", sel, service, onSent, on
       <h3 className="steph">
         <span className="step">3</span>Your details
       </h3>
-      <form id="bookform" onSubmit={submit} noValidate>
+      <form id="bookform" className={`gated${service && sel ? " ready" : ""}`} onSubmit={submit} noValidate>
         <div className="ticket" aria-label="Your visit so far">
           <div className="ticket-head">
             <span>Your visit</span>
@@ -184,12 +190,12 @@ export default function InquiryForm({ initialItem = "", sel, service, onSent, on
             <li className={service ? "ok" : ""}>
               <span className="dotc" aria-hidden />
               <small>Service</small>
-              <b>{svcName ?? "Pick a service on the left"}</b>
+              <b>{svcName ?? "Pick a service"}</b>
             </li>
             <li className={sel ? "ok" : ""}>
               <span className="dotc" aria-hidden />
               <small>When</small>
-              <b>{sel ? when : "Pick a free time on the left"}</b>
+              <b>{sel ? when : "Pick a free time"}</b>
             </li>
             <li className={sel ? "ok" : ""}>
               <span className="dotc" aria-hidden />
@@ -203,6 +209,7 @@ export default function InquiryForm({ initialItem = "", sel, service, onSent, on
             </li>
           </ul>
         </div>
+        <p className="gatehint">Choose a service and a time above, and your details form opens right here.</p>
         <div className="formcard" id="fDetails">
         <h4 className="fhead">About you</h4>
         <div className="row2">

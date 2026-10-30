@@ -28,7 +28,8 @@ export default function ServiceTabs() {
         <aside className="stabs-side">
           <span className="tile-icon big" aria-hidden>{ICONS[s.id]}</span>
           <h2>{s.name}</h2>
-          <p>{s.items.length} {s.items.length === 1 ? "service" : "services"}. Tap one to book exactly that.</p>
+          <p>{s.blurb}</p>
+          <small className="stabs-hint">{s.items.length} {s.items.length === 1 ? "service" : "services"} · tap one to book exactly that</small>
           <Link className="btn gold" href={`/book?service=${s.id}`}>Book {s.name.toLowerCase()}</Link>
         </aside>
         <ul className="stabs-list">
@@ -41,6 +42,10 @@ export default function ServiceTabs() {
               </Link>
             </li>
           ))}
+          <li className="stabs-help">
+            <span>Not sure which one your bike needs?</span>
+            <button type="button" className="linkbtn" onClick={() => window.dispatchEvent(new Event("open-chat"))}>Chat with Adrian</button>
+          </li>
         </ul>
       </div>
     </div>

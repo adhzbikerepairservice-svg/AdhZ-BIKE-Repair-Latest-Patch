@@ -9,7 +9,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ wallet: string
   const qr = await readQr(id);
   if (!qr) {
     const shipped = STATIC_QR[id];
-    return shipped ? Response.redirect(new URL(shipped, _req.url), 307) : new Response("No QR code", { status: 404 });
+    return shipped ? new Response(null, { status: 307, headers: { Location: shipped } }) /* relative, so it works from any address (a phone on the same Wi-Fi, the live site) */ : new Response("No QR code", { status: 404 });
   }
   return new Response(new Uint8Array(qr.bytes), { headers: { "Content-Type": qr.type, "Cache-Control": "no-cache" } });
 }

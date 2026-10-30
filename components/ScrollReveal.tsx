@@ -7,13 +7,11 @@ const TARGETS = ".sec-head, .tile, .qcard, .road li:not(.road-bike), .svccard, .
 
 /**
  * Tags matching elements with `.reveal` and adds `.in` when they enter the viewport. Elements are
- * tagged from JS, so without JS (or with reduced motion) everything simply stays visible.
+ * tagged from JS, so without JS everything simply stays visible.
  * A MutationObserver picks up content that renders later (schedule, route changes).
  */
 export default function ScrollReveal() {
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {

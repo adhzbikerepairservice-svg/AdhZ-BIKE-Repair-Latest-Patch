@@ -4,6 +4,7 @@ import ChatWidget from "@/components/ChatWidget";
 import BackToTop from "@/components/BackToTop";
 import ScrollReveal from "@/components/ScrollReveal";
 import SiteNav from "@/components/SiteNav";
+import HideOnAdmin from "@/components/HideOnAdmin";
 import SiteFooter from "@/components/SiteFooter";
 import "./globals.css";
 
@@ -25,7 +26,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="wrap">
           <SiteNav />
           <main>{children}</main>
-          <SiteFooter />
+          <HideOnAdmin>
+            <SiteFooter />
+          </HideOnAdmin>
           <ScrollReveal />
           <BackToTop />
           <ChatWidget />
