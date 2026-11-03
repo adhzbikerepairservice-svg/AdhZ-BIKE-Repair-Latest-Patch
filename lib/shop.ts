@@ -71,7 +71,7 @@ export interface Inquiry {
   payNow?: boolean; // e-wallet customers who chose to send a deposit right after booking
   advance?: { amount: number; wallet: string; ref: string; status: "submitted" | "confirmed"; at: number };
   payPref: "cash" | "ewallet"; // how the customer says they will pay
-  email: string; // customer's Gmail/email, used to send the receipt
+  email: string; // customer's Gmail, used to send the receipt; may be empty (optional)
   service: string;
   bike: string;
   brand: string;

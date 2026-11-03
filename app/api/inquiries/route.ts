@@ -22,7 +22,7 @@ async function postInquiry(req: Request) {
   const name = str(body.name, 100);
   const contact = str(body.contact, 150);
   const email = str(body.email, 150).toLowerCase();
-  if (!/^[a-z0-9._%+-]+@(gmail|googlemail)\.com$/.test(email)) return NextResponse.json({ error: "email" }, { status: 400 });
+  if (email && !/^[a-z0-9._%+-]+@(gmail|googlemail)\.com$/.test(email)) return NextResponse.json({ error: "email" }, { status: 400 });
   const date = str(body.date, 10);
   const hour = body.hour as number;
   if (!name || !contact || !getService(str(body.service, 30)) || !getMech(str(body.mech, 30)) || !HOURS.includes(hour) || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -66,6 +66,11 @@ async function emailReceipt(inq: Inquiry, origin: string) {
   const rows = r.lines.map((l) => `<tr><td style="padding:6px 0">${l.label.replace(/</g, "&lt;")}</td><td style="padding:6px 0;text-align:right">₱${l.amount.toLocaleString("en-PH")}</td></tr>`).join("");
   const due = r.payStatus === "unpaid";
   const html = `<div style="font-family:Arial,sans-serif;max-width:480px;color:#1e2b52"><h2 style="color:#1f52c4;margin:0 0 4px">ADHZ Bike Repair &amp; Service</h2><p style="margin:0 0 16px;color:#5b6688">Receipt ${r.no}</p><p>Hi ${inq.name.replace(/</g, "&lt;")}, your ${svcOf(inq.service)?.name?.toLowerCase() ?? "service"} is done. Thank you!</p><p style="margin:0 0 8px;color:#5b6688">Paid by: <b>${r.payment === "ewallet" ? "E-wallet" + (r.payRef ? " (ref " + r.payRef.replace(/</g, "&lt;") + ")" : "") : "Cash"}</b></p><table style="width:100%;border-collapse:collapse;border-top:1px solid #d5dcf0">${rows}<tr><td style="padding:10px 0;border-top:1px solid #d5dcf0"><b>Total</b></td><td style="padding:10px 0;border-top:1px solid #d5dcf0;text-align:right"><b>₱${r.total.toLocaleString("en-PH")}</b></td></tr></table>${r.note ? `<p style="color:#5b6688">${r.note.replace(/</g, "&lt;")}</p>` : ""}${due ? `<p style="background:#fbefc2;padding:10px;border-radius:8px">Payment due: open the receipt below to pay by e-wallet and enter your reference number.</p>` : ""}<p><a href="${link}" style="background:#1f52c4;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">${due ? "Open receipt and pay" : "Open full receipt"}</a></p><p style="color:#5b6688;font-size:13px">Brgy. Camacho Cadre, Balanga City, Bataan · 0969 333 3473</p></div>`;
+  if (!inq.email) {
+    r.emailed = false;
+    r.emailError = "No email was given. Send the receipt link by phone or message.";
+    return { ok: false, error: r.emailError };
+  }
   const sent = await sendEmail(inq.email, `Your receipt from ADHZ Bike Repair & Service (${r.no})`, html);
   r.emailed = sent.ok;
   r.emailError = sent.ok ? undefined : sent.error;

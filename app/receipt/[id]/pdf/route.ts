@@ -57,8 +57,8 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   let y = H - 150;
   label("Billed to", col[0], y);
   text(fit(i.name, 160, 11, bold), col[0], y - 16, 11, bold);
-  text(fit(i.email, 160, 9.5), col[0], y - 31, 9.5, font, muted);
-  text(fit(i.contact, 160, 9.5), col[0], y - 44, 9.5, font, muted);
+  if (i.email) text(fit(i.email, 160, 9.5), col[0], y - 31, 9.5, font, muted);
+  text(fit(i.contact, 160, 9.5), col[0], i.email ? y - 44 : y - 31, 9.5, font, muted);
   label("From", col[1], y);
   text("ADHZ Bike Repair & Service", col[1], y - 16, 11, bold);
   text(fit(ADDRESS, 165, 9), col[1], y - 31, 9, font, muted);

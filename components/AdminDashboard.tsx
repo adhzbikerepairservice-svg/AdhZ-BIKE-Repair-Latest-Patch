@@ -186,7 +186,7 @@ export default function AdminDashboard() {
       const r = await res.json();
       const sub = encodeURIComponent(`Your receipt from ADHZ Bike Repair & Service (${r.no})`);
       const body = encodeURIComponent(`Hi ${i.name},\n\nYour bike service is done. Thank you!\nYour receipt: ${r.link}\n\nADHZ Bike Repair & Service\n0969 333 3473`);
-      setDoneMsg({ id: i.id, text: (r.refund ? `Refund ₱${Number(r.refund).toLocaleString("en-PH")} to the customer (deposit was more than the bill). ` : "") + (r.emailed ? `Receipt ${r.no} emailed to ${i.email}.` : `Receipt ${r.no} created but NOT emailed (${r.error ?? "unknown"}). Use Email it, or Send again once email is set up.`), link: r.link, mail: `mailto:${i.email}?subject=${sub}&body=${body}` });
+      setDoneMsg({ id: i.id, text: (r.refund ? `Refund ₱${Number(r.refund).toLocaleString("en-PH")} to the customer (deposit was more than the bill). ` : "") + (r.emailed ? `Receipt ${r.no} emailed to ${i.email}.` : i.email ? `Receipt ${r.no} created but NOT emailed (${r.error ?? "unknown"}). Use Email it, or Send again once email is set up.` : `Receipt ${r.no} created. No email was given, so open the receipt and send the link by phone or message.`), link: r.link, mail: i.email ? `mailto:${i.email}?subject=${sub}&body=${body}` : "" });
       setDoing("");
       setLines([{ label: "", amount: "" }]);
       setRnote("");
@@ -470,7 +470,7 @@ export default function AdminDashboard() {
                         </p>
                         {i.notes && <p>&ldquo;{i.notes}&rdquo;</p>}
                         <p>
-                          Email: <a href={`mailto:${i.email}`}>{i.email}</a> · Will pay by {i.payPref === "ewallet" ? "e-wallet" : "cash"}
+                          {i.email ? <>Email: <a href={`mailto:${i.email}`}>{i.email}</a></> : "No email given"} · Will pay by {i.payPref === "ewallet" ? "e-wallet" : "cash"}
                         </p>
                       </details>
                       {i.advance && (
@@ -495,8 +495,8 @@ export default function AdminDashboard() {
                       {i.receipt?.refund ? <div className="msg err">The deposit was ₱{i.receipt.refund.toLocaleString("en-PH")} more than the bill. Please refund that amount to the customer.</div> : null}
                       {i.receipt && (
                         <p>
-                          Receipt {i.receipt.no} · ₱{i.receipt.total.toLocaleString("en-PH")} · {i.receipt.emailed ? `emailed to ${i.email}` : "not emailed yet"}{" "}
-                          {!i.receipt.emailed && (
+                          Receipt {i.receipt.no} · ₱{i.receipt.total.toLocaleString("en-PH")} · {i.receipt.emailed ? `emailed to ${i.email}` : i.email ? "not emailed yet" : "no email given, share the receipt link"}{" "}
+                          {!i.receipt.emailed && i.email && (
                             <button type="button" className="linkbtn" onClick={async () => { const x = await post("/api/inquiries", "PATCH", { id: i.id, action: "resend" }); const d = await x.json(); setDoneMsg({ id: i.id, text: d.emailed ? `Receipt emailed to ${i.email}.` : `Still not sent: ${d.error ?? "unknown"}`, link: `/receipt/${i.id}`, mail: `mailto:${i.email}` }); load(); }}>Send again</button>
                           )}
                         </p>
@@ -504,7 +504,7 @@ export default function AdminDashboard() {
                       {doneMsg?.id === i.id && (
                         <div className="msg good">
                           {doneMsg.text}{" "}
-                          <a href={doneMsg.mail}>Email it</a> · <a href={doneMsg.link} target="_blank" rel="noreferrer">Open receipt</a>
+                          {doneMsg.mail && <><a href={doneMsg.mail}>Email it</a> · </>}<a href={doneMsg.link} target="_blank" rel="noreferrer">Open receipt</a>
                         </div>
                       )}
                       {doing === i.id && (
@@ -644,7 +644,7 @@ export default function AdminDashboard() {
                   <div>
                     <h3>{c.name}</h3>
                     <p>
-                      <a href={`mailto:${c.email}`}>{c.email}</a> · {c.phone}
+                      {c.email ? <><a href={`mailto:${c.email}`}>{c.email}</a> · </> : null}{c.phone}
                     </p>
                     <p>
                       {c.visits.length} booking{c.visits.length > 1 ? "s" : ""} · {c.receipts.length} receipt{c.receipts.length === 1 ? "" : "s"}
@@ -667,7 +667,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="acts">
                     {phoneOf(c.phone) && <a className="btn ghost" href={`tel:${phoneOf(c.phone)}`}>Call</a>}
-                    <a className="btn ghost" href={`mailto:${c.email}`}>Email</a>
+                    {c.email && <a className="btn ghost" href={`mailto:${c.email}`}>Email</a>}
                   </div>
                 </article>
               ))}

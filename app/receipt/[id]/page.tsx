@@ -48,7 +48,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
           <div>
             <small>Billed to</small>
             <b>{i.name}</b>
-            <p>{i.email}</p>
+            {i.email && <p>{i.email}</p>}
             <p>{i.contact}</p>
           </div>
           <div>

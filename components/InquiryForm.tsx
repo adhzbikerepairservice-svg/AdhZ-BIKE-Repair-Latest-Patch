@@ -73,7 +73,7 @@ export default function InquiryForm({ initialItem = "", item, sel, service, onSe
     if (!service) return fail("fService", "Choose the service you need in step 1.");
     if (!name.trim()) return fail("fName", "Enter your name.");
     if (!contact.trim()) return fail("fContact", "Enter a phone number so we can reach you.");
-    if (!/^[a-z0-9._%+-]+@(gmail|googlemail)\.com$/i.test(email.trim())) return fail("fEmail", "Enter your Gmail address (ending in @gmail.com). We send your receipt there.");
+    if (email.trim() && !/^[a-z0-9._%+-]+@(gmail|googlemail).com$/i.test(email.trim())) return fail("fEmail", "That does not look like a Gmail address (name@gmail.com). Fix it, or leave it blank.");
     if (handover === "collect" && !address.trim()) return fail("fAddress", "Enter the address where we should collect the bike.");
     if (!sel) return setMsg({ text: "Pick a free time slot from the schedule first.", kind: "err" });
 
@@ -118,7 +118,7 @@ export default function InquiryForm({ initialItem = "", item, sel, service, onSe
     }
   }
 
-  const detailsOk = name.trim().length > 1 && contact.trim().length >= 7 && /^[a-z0-9._%+-]+@(gmail|googlemail)\.com$/i.test(email.trim());
+  const detailsOk = name.trim().length > 1 && contact.trim().length >= 7;
   const stepsDone = (service ? 1 : 0) + (sel ? 1 : 0) + (detailsOk ? 1 : 0);
   const svcName = getService(service)?.name;
   const when = sel ? `${dayLong(sel.date)} at ${hourLabel(sel.hour)}` : "";
@@ -205,7 +205,7 @@ export default function InquiryForm({ initialItem = "", item, sel, service, onSe
             <li className={detailsOk ? "ok" : ""}>
               <span className="dotc" aria-hidden />
               <small>Your details</small>
-              <b>{detailsOk ? "Name, phone and Gmail added" : "Fill in the form below"}</b>
+              <b>{detailsOk ? "Name and phone added" : "Fill in the form below"}</b>
             </li>
           </ul>
         </div>
@@ -223,8 +223,8 @@ export default function InquiryForm({ initialItem = "", item, sel, service, onSe
           </label>
         </div>
         <label htmlFor="fEmail">
-          Gmail (for your receipt)
-          <input id="fEmail" type="email" inputMode="email" autoComplete="email" pattern="[A-Za-z0-9._%+-]+@(gmail|googlemail).com" title="A Gmail address, like name@gmail.com" placeholder="yourname@gmail.com" value={email} aria-invalid={bad === "fEmail"} onChange={(e) => { setBad(""); setEmail(e.target.value); }} required />
+          <span>Gmail for your receipt <small className="optional">Optional</small></span>
+          <input id="fEmail" type="email" inputMode="email" autoComplete="email" pattern="[A-Za-z0-9._%+-]+@(gmail|googlemail).com" title="A Gmail address, like name@gmail.com" placeholder="yourname@gmail.com" value={email} aria-invalid={bad === "fEmail"} onChange={(e) => { setBad(""); setEmail(e.target.value); }} />
         </label>
         <h4 className="fhead">Your bike</h4>
         <div className="row2">
@@ -300,7 +300,7 @@ export default function InquiryForm({ initialItem = "", item, sel, service, onSe
           <div className="ewallet-info">
             <b>How e-wallet payment works</b>
             <ol>
-              <li>The exact amount is only known once the job is done, so your receipt (emailed to you) shows it.</li>
+              <li>The exact amount is only known once the job is done, so your receipt shows it (emailed if you gave a Gmail, otherwise the shop sends you the link).</li>
               <li>You then send it to the shop&apos;s {wallets.length ? wallets.map((w) => w.id).join(" or ") : "GCash or Maya"} and enter the reference number on the receipt.</li>
             </ol>
             {wallets.map((w) => (
